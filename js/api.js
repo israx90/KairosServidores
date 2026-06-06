@@ -39,13 +39,22 @@ function getCurrentUser() {
     }
 }
 
+// Get bcrypt library from any known namespace
+function getBcrypt() {
+    if (window.dcodeIO && window.dcodeIO.bcrypt) return window.dcodeIO.bcrypt;
+    if (window.bcrypt) return window.bcrypt;
+    if (typeof bcrypt !== 'undefined') return bcrypt;
+    return null;
+}
+
 // Intercept window.fetch
 const originalFetch = window.fetch;
 window.fetch = async function (url, options = {}) {
     let urlStr = typeof url === 'string' ? url : (url instanceof Request ? url.url : url.toString());
 
-    // Check if it's an API call
-    if (urlStr.includes('api/')) {
+    // Check if it's a local API call (not Supabase or external)
+    const isLocalApi = urlStr.includes('api/') && !urlStr.includes('supabase.co');
+    if (isLocalApi) {
         try {
             return await handleMockApi(urlStr, options);
         } catch (error) {
@@ -97,7 +106,14 @@ async function handleMockApi(urlStr, options) {
 
                 // Fetch users
                 const { data: users, error } = await supabase.from('public_users').select('*');
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase users fetch error:', error);
+                    return jsonResponse(null, 'Error de conexión con la base de datos: ' + error.message, false);
+                }
+
+                if (!users || users.length === 0) {
+                    return jsonResponse(null, 'No hay usuarios registrados en la base de datos.', false);
+                }
 
                 // Find matching user by alias (no spaces), name (no spaces) or phone
                 const user = users.find(u => {
@@ -106,14 +122,22 @@ async function handleMockApi(urlStr, options) {
                     return aliasClean === cleanUserInput || nameClean === cleanUserInput || u.phone === username;
                 });
 
-                if (user && window.dcodeIO && window.dcodeIO.bcrypt) {
-                    const match = window.dcodeIO.bcrypt.compareSync(password, user.password_hash);
-                    if (match) {
-                        delete user.password_hash;
-                        return jsonResponse(user, "Login exitoso.");
-                    }
+                if (!user) {
+                    return jsonResponse(null, 'Usuario no encontrado.', false);
                 }
-                return jsonResponse(null, "Credenciales incorrectas.", false);
+
+                const bcryptLib = getBcrypt();
+                if (!bcryptLib) {
+                    console.error('bcryptjs library not loaded. dcodeIO:', window.dcodeIO);
+                    return jsonResponse(null, 'Error: librería de cifrado no disponible. Recarga la página.', false);
+                }
+
+                const match = bcryptLib.compareSync(password, user.password_hash);
+                if (match) {
+                    delete user.password_hash;
+                    return jsonResponse(user, "Login exitoso.");
+                }
+                return jsonResponse(null, "Contraseña incorrecta.", false);
             }
 
             else if (action === 'change_password') {

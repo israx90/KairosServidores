@@ -74,6 +74,12 @@ body {
     border: var(--glass-border);
     box-shadow: var(--shadow-soft);
     border-radius: var(--border-radius);
+    min-width: 0; /* Prevents overflow in flex/grid */
+}
+
+.main-content {
+    min-width: 0;
+    width: 100%;
 }
 
 .auth-container {

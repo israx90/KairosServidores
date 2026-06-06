@@ -36,9 +36,9 @@ export const Profile = {
                             </div>
                             
                             <button onclick="document.getElementById('profile-upload').click()" 
-                                class="btn btn-primary"
-                                style="position: absolute; bottom: 0; right: 0; padding: 8px; border-radius: 50%; width: 36px; height: 36px; min-width: unset;">
-                                <i class="ph-bold ph-camera"></i>
+                                class="btn btn-primary btn-icon"
+                                style="position: absolute; bottom: 0; right: 0; width: 36px; height: 36px; min-height: 36px;">
+                                <i class="ph-bold ph-camera" style="font-size: 20px;"></i>
                             </button>
                             <input type="file" id="profile-upload" accept="image/*" style="display: none;">
                         </div>

@@ -190,14 +190,8 @@ const App = {
             let subscription = await registration.pushManager.getSubscription();
             
             if (!subscription) {
-                // Fetch VAPID key from backend
-                const res = await fetch('api/vapid-public.js');
-                if (!res.ok) {
-                    console.warn('Falta configurar la clave pública VAPID en Vercel (api/vapid-public.js retornó error).');
-                    return;
-                }
-                const data = await res.json();
-                const publicVapidKey = data.publicKey;
+                // Public VAPID Key (Generada)
+                const publicVapidKey = 'BDurAkZeZxANaK6_liV5MumZUd-MjOz7bF-9-xTvasLQzveCHSj3O9HP8pXiPJEOC6gZ5vjpOvc-zJnY6XvTUNE';
                 
                 const padding = '='.repeat((4 - publicVapidKey.length % 4) % 4);
                 const base64 = (publicVapidKey + padding).replace(/\-/g, '+').replace(/_/g, '/');

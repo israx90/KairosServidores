@@ -7,9 +7,9 @@ const supabaseUrl = 'https://sogmgtmphblxzdxwvazt.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_publishable_lnjvweRtNSRgiYoDzMhH2w_Nm-sTpUM'; 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// VAPID keys should be set in Vercel Environment Variables
-const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
-const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
+// VAPID keys
+const publicVapidKey = process.env.VAPID_PUBLIC_KEY || 'BDurAkZeZxANaK6_liV5MumZUd-MjOz7bF-9-xTvasLQzveCHSj3O9HP8pXiPJEOC6gZ5vjpOvc-zJnY6XvTUNE';
+const privateVapidKey = process.env.VAPID_PRIVATE_KEY || 'RtDsK5S6GB-_PPFRpnXG6dM-l1daxeBROKvSNLVwXWQ';
 const myWhatsAppNumber = '+59174573450'; // User's requested number
 
 export default async function handler(req, res) {

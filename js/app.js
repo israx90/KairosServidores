@@ -45,6 +45,14 @@ const App = {
             logoutBtn.addEventListener('click', () => this.handleLogout());
         }
 
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+            const btn = document.getElementById('install-app-btn');
+            if (btn) btn.style.display = 'inline-flex';
+        });
+
         // Navigation — single delegated listener on document to avoid duplicates
         // This handles both sidebar links and any dynamically added nav items
         document.addEventListener('click', (e) => {

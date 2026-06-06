@@ -213,7 +213,7 @@ export const Admin = {
                 </button>
             </div>
 
-            <div style="max-height: 500px; overflow-y: auto;" id="events-table-wrapper" class="table-responsive">
+            <div style="max-height: 500px; overflow-y: auto; overflow-x: auto;" id="events-table-wrapper" class="table-responsive">
                 <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
                     <thead>
                         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">

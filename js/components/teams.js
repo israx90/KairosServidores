@@ -63,12 +63,12 @@ export const Teams = {
 
         let html = `
             <div class="glass" style="padding: 20px; border-radius: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                     <h2><i class="ph-bold ph-users-three"></i> Gestión de Equipos</h2>
                     ${canEdit ? '<button id="create-team-btn" class="btn btn-primary"><i class="ph-bold ph-plus"></i> Nuevo Equipo</button>' : ''}
                 </div>
 
-                <div class="teams-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <div class="teams-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
                     ${teams.map(team => `
                         <div class="glass" style="padding: 20px; border: 1px solid rgba(255,255,255,0.1);">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">

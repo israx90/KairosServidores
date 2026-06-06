@@ -71,7 +71,7 @@ export const Users = {
 
         let html = `
             <div class="glass" style="padding: 20px; border-radius: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                     <h2><i class="ph-bold ph-users"></i> Gestión de Usuarios</h2>
                     <button id="create-user-btn" class="btn btn-primary"><i class="ph-bold ph-plus"></i> Nuevo Usuario</button>
                 </div>

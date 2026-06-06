@@ -118,6 +118,25 @@ export const Profile = {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Acerca de la App -->
+                    <div style="grid-column: 1 / -1; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px;">
+                        <h3 style="margin-bottom: 15px;"><i class="ph-bold ph-info"></i> Acerca de la App</h3>
+                        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <img src="logo/logo.png" style="width: 48px; height: 48px; object-fit: contain;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.1em;">KRS Servidores</h4>
+                                    <p class="text-muted" style="font-size: 0.85em; margin: 0;">Versión 1.0.0 &middot; PWA Ready</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="Profile.installApp()" id="install-app-btn" style="display: none;"><i class="ph-bold ph-download-simple"></i> Instalar App</button>
+                                <button class="btn btn-secondary" onclick="Profile.testPushNotification()"><i class="ph-bold ph-paper-plane-tilt"></i> Probar Notificación</button>
+                                <button class="btn btn-secondary" onclick="window.location.reload(true)"><i class="ph-bold ph-arrows-clockwise"></i> Recargar</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Swaps Section -->
@@ -485,6 +504,20 @@ export const Profile = {
             }
         } catch (e) {
             showToast('Error de conexión', 'error');
+        }
+    },
+
+    async installApp() {
+        if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            const { outcome } = await window.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                window.deferredPrompt = null;
+                const btn = document.getElementById('install-app-btn');
+                if (btn) btn.style.display = 'none';
+            }
+        } else {
+            showToast('Tu dispositivo ya la tiene instalada o no lo soporta en este navegador.', 'info');
         }
     }
 };

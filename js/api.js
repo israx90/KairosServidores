@@ -583,7 +583,7 @@ async function handleMockApi(urlStr, options) {
 
                 if (assignments.length === 0) return rawResponse([]);
 
-                const { data: users, error: usrErr } = await supabase.from('public_users').select('id, name, alias, profile_pic');
+                const { data: users, error: usrErr } = await supabase.from('public_users').select('id, name, alias, profile_pic, phone');
                 if (usrErr) throw usrErr;
 
                 const { data: teams, error: tmErr } = await supabase.from('teams').select('id, name');
@@ -597,6 +597,7 @@ async function handleMockApi(urlStr, options) {
                         user_name: u ? u.name : 'Desconocido',
                         user_alias: u ? u.alias : '',
                         profile_pic: u ? u.profile_pic : 'assets/default-avatar.svg',
+                        phone: u ? u.phone : null,
                         team_name: t ? t.name : null
                     };
                 });
@@ -949,9 +950,20 @@ async function handleMockApi(urlStr, options) {
             // Get assignments for these events
             const { data: assignments, error: assErr } = await supabase
                 .from('assignments')
-                .select('id, event_id')
+                .select('id, event_id, user_id, status')
                 .in('event_id', eventIds);
             if (assErr) throw assErr;
+
+            // Get users to populate avatars
+            const userIds = [...new Set(assignments.map(a => a.user_id))];
+            let allUsers = [];
+            if (userIds.length > 0) {
+                const { data: usersData } = await supabase
+                    .from('public_users')
+                    .select('id, name, alias, profile_pic')
+                    .in('id', userIds);
+                if (usersData) allUsers = usersData;
+            }
 
             // Group by event_date
             const summaryMap = {};
@@ -961,14 +973,28 @@ async function handleMockApi(urlStr, options) {
                     summaryMap[date] = {
                         event_date: date,
                         event_count: 0,
-                        assigned_count: 0
+                        assigned_count: 0,
+                        users: []
                     };
                 }
                 summaryMap[date].event_count++;
                 
                 // Count assignments for this event
-                const count = assignments.filter(a => a.event_id === e.id).length;
-                summaryMap[date].assigned_count += count;
+                const eventAssignments = assignments.filter(a => a.event_id === e.id);
+                summaryMap[date].assigned_count += eventAssignments.length;
+
+                // Add to users array (with basic details)
+                eventAssignments.forEach(a => {
+                    const u = allUsers.find(user => user.id === a.user_id);
+                    if (u) {
+                        summaryMap[date].users.push({
+                            id: u.id,
+                            alias: u.alias || u.name,
+                            profile_pic: u.profile_pic || 'assets/default-avatar.svg',
+                            status: a.status
+                        });
+                    }
+                });
             });
 
             // Sort by event date

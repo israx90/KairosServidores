@@ -129,9 +129,33 @@ export const Calendar = {
             const isToday = dateStr === todayStr;
             const isPast = new Date(dateStr + 'T23:59:59') < today;
 
-            const statusCls = isCovered ? 'summary-badge covered' : 'summary-badge uncovered';
-            const statusIcon = isCovered ? '<i class="ph-bold ph-check"></i>' : '<i class="ph-bold ph-warning"></i>';
-            const statusText = isCovered ? `${coverage.assigned_count} vol.` : '\u00a1Vac\u00edo!';
+            let statusHtml = '';
+            if (isCovered && coverage.users && coverage.users.length > 0) {
+                // Remove duplicates by user ID
+                const uniqueUsersMap = {};
+                coverage.users.forEach(u => uniqueUsersMap[u.id] = u);
+                const uniqueUsers = Object.values(uniqueUsersMap);
+
+                const maxToShow = 3;
+                const usersToShow = uniqueUsers.slice(0, maxToShow);
+                const extraCount = uniqueUsers.length - maxToShow;
+                
+                statusHtml = `<div style="display: flex; align-items: center; justify-content: flex-end;">`;
+                usersToShow.forEach((u, i) => {
+                    const zIndex = maxToShow - i;
+                    const marginLeft = i === 0 ? '0' : '-8px';
+                    const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid #00e676;' : 'border: 2px solid var(--bg-lighter);';
+                    const grayscale = u.status === 'confirmed' ? '' : 'filter: grayscale(80%); opacity: 0.8;';
+                    statusHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale} margin-left: ${marginLeft}; z-index: ${zIndex}; position: relative; background: var(--bg-lighter);">`;
+                });
+                if (extraCount > 0) {
+                    statusHtml += `<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-lighter); border: 2px solid var(--bg-color); color: var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 0.7em; margin-left: -8px; z-index: 0; position: relative; font-weight: bold;">+${extraCount}</div>`;
+                }
+                statusHtml += `</div>`;
+            } else {
+                statusHtml = `<div class="summary-badge uncovered"><i class="ph-bold ph-warning"></i> \u00a1Vac\u00edo!</div>`;
+            }
+
             const todayMark = isToday ? ' style="border-left-color: #ff8c00; padding-left: 6px;"' : '';
             const pastStyle = isPast ? 'opacity: 0.4;' : '';
 
@@ -160,7 +184,7 @@ export const Calendar = {
                         ${eventChips}
                     </div>
                     <div class="summary-status">
-                        <div class="${statusCls}">${statusIcon} ${statusText}</div>
+                        ${statusHtml}
                     </div>
                 </div>`;
         }).join('');
@@ -615,11 +639,17 @@ export const Calendar = {
                             </div>
                         </div>
                         <div style="display: flex; gap: 5px;">
+                            ${isAdmin && a.phone ? `
+                                <button class="btn btn-success btn-sm" onclick="Calendar.notifyUser('${a.phone}', '${a.user_name}', '${a.role}', '${event.event_date}', '${event.event_time}')" title="Notificar por WhatsApp" style="background: #25D366; border-color: #25D366; color: white;"><i class="ph-bold ph-whatsapp-logo"></i></button>
+                            ` : ''}
+                            ${(user && user.id == a.user_id && a.status !== 'confirmed') ? `
+                                <button class="btn btn-success btn-sm" onclick="Calendar.confirmAssignment(${a.id}, ${event.id})" title="Confirmar Asistencia" style="background: #00e676; border-color: #00e676; color: black;"><i class="ph-bold ph-check-circle"></i> Confirmar</button>
+                            ` : ''}
                             ${(user && user.id == a.user_id) ? `
                                 <button class="btn btn-warning btn-sm" onclick="Calendar.requestSwap(${a.id}, ${event.id})" title="Solicitar Cambio"><i class="ph-bold ph-arrows-left-right"></i></button>
                             ` : ''}
                             ${isAdmin || (user && user.id == a.user_id) ? `
-                                <button class="btn btn-danger btn-sm" onclick="Calendar.deleteAssignment(${a.id}, ${event.id})"><i class="ph-bold ph-trash"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="Calendar.deleteAssignment(${a.id}, ${event.id})" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
                             ` : ''}
                         </div>
                     </div>
@@ -770,6 +800,38 @@ export const Calendar = {
                 this.viewDetails(eventId); // Refresh modal
             } else {
                 showToast(result.message || 'Error', 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión', 'error');
+        }
+    },
+
+    notifyUser(phone, userName, role, date, time) {
+        if (!phone || phone.trim() === '') {
+            showToast('Este servidor no tiene número de teléfono registrado.', 'error');
+            return;
+        }
+        // Format message
+        const text = `Hola ${userName}, te escribo para recordarte tu servicio de *${role}* programado para el día *${date}* a las *${time}*. Por favor, entra al sistema de servidores KRS y confirma tu asistencia. ¡Gracias!`;
+        const cleanPhone = phone.replace(/\D/g, '');
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    },
+
+    async confirmAssignment(assignmentId, eventId) {
+        try {
+            const response = await fetch('api/assignments.php', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: assignmentId, status: 'confirmed' })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('¡Asistencia confirmada exitosamente!', 'success');
+                this.viewDetails(eventId); // Refresh modal
+                this.fetchMonthSummary().then(() => this.render()); // Refresh month summary to update avatars
+            } else {
+                showToast(result.message || 'Error al confirmar', 'error');
             }
         } catch (e) {
             showToast('Error de conexión', 'error');

@@ -283,8 +283,8 @@ const App = {
 
         // Update Active State in Nav
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        const activeLink = document.querySelector(`.nav-item[href="#${view}"]`);
-        if (activeLink) activeLink.classList.add('active');
+        const activeLinks = document.querySelectorAll(`.nav-item[href="#${view}"]`);
+        activeLinks.forEach(link => link.classList.add('active'));
 
         const mainContent = document.getElementById('main-content');
         mainContent.innerHTML = ''; // Clear content

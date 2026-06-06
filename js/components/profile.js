@@ -223,7 +223,7 @@ export const Profile = {
                 if (result.success) {
                     // Update Local Storage
                     const user = JSON.parse(localStorage.getItem('krs_user'));
-                    user.profile_pic = result.data.url + '?t=' + new Date().getTime();
+                    user.profile_pic = result.data.url.startsWith('data:image') ? result.data.url : result.data.url + '?t=' + new Date().getTime();
                     localStorage.setItem('krs_user', JSON.stringify(user));
 
                     // Update profile preview (now a wrapper div)

@@ -84,8 +84,6 @@ body {
     width: 96%;
     margin: 0 auto;
     padding: 20px;
-    padding-bottom: 100px;
-    /* Space for bottom nav on mobile */
 }
 
 /* Typography */
@@ -115,7 +113,7 @@ h6 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px 24px;
+    padding: 12px 24px;
     border-radius: 99px;
     /* Pill shape */
     border: none;
@@ -126,6 +124,7 @@ h6 {
     text-decoration: none;
     position: relative;
     overflow: hidden;
+    min-height: 48px; /* Mobile touch target */
 }
 
 .btn:active {
@@ -185,7 +184,7 @@ h6 {
 
 .form-control {
     width: 100%;
-    padding: 16px 20px;
+    padding: 14px 16px;
     background: var(--background-input);
     border: 1px solid #27272a;
     border-radius: 16px;
@@ -193,6 +192,7 @@ h6 {
     font-family: inherit;
     font-size: 1rem;
     transition: 0.3s;
+    min-height: 48px; /* Mobile touch target */
 }
 
 .form-control:focus {

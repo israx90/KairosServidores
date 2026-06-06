@@ -1,7 +1,6 @@
 const CACHE_NAME = 'krs-cache-v1';
 const ASSETS_TO_CACHE = [
     './',
-    './index2.html',
     './css/style.css',
     './logo/logo.png',
     './assets/default-avatar.svg',

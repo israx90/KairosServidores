@@ -3,6 +3,7 @@
  * Handles Routing, State, and UI Interaction
  */
 
+import './api.js';
 import { Profile } from './components/profile.js';
 import { Calendar } from './components/calendar.js';
 import { Teams } from './components/teams.js';

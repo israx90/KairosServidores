@@ -1,6 +1,0 @@
-open ftpupload.net
-if0_41055875
-R65Lj914HSITA
-cd htdocs
-put reset_israx.php
-quit

@@ -102,42 +102,22 @@ async function handleMockApi(urlStr, options) {
                     return jsonResponse(null, "Usuario y contraseña requeridos.", false);
                 }
 
-                const cleanUserInput = username.replace(/\s+/g, '');
+                // Call the secure RPC function for login
+                const { data, error } = await supabase.rpc('verify_login', {
+                    p_username: username,
+                    p_password: password
+                });
 
-                // Fetch users
-                const { data: users, error } = await supabase.from('public_users').select('*');
                 if (error) {
-                    console.error('Supabase users fetch error:', error);
+                    console.error('Supabase RPC login error:', error);
                     return jsonResponse(null, 'Error de conexión con la base de datos: ' + error.message, false);
                 }
 
-                if (!users || users.length === 0) {
-                    return jsonResponse(null, 'No hay usuarios registrados en la base de datos.', false);
+                if (data && data.success) {
+                    return jsonResponse(data.data, data.message);
+                } else {
+                    return jsonResponse(null, data ? data.message : "Contraseña incorrecta.", false);
                 }
-
-                // Find matching user by alias (no spaces), name (no spaces) or phone
-                const user = users.find(u => {
-                    const aliasClean = (u.alias || '').replace(/\s+/g, '');
-                    const nameClean = (u.name || '').replace(/\s+/g, '');
-                    return aliasClean === cleanUserInput || nameClean === cleanUserInput || u.phone === username;
-                });
-
-                if (!user) {
-                    return jsonResponse(null, 'Usuario no encontrado.', false);
-                }
-
-                const bcryptLib = getBcrypt();
-                if (!bcryptLib) {
-                    console.error('bcryptjs library not loaded. dcodeIO:', window.dcodeIO);
-                    return jsonResponse(null, 'Error: librería de cifrado no disponible. Recarga la página.', false);
-                }
-
-                const match = bcryptLib.compareSync(password, user.password_hash);
-                if (match) {
-                    delete user.password_hash;
-                    return jsonResponse(user, "Login exitoso.");
-                }
-                return jsonResponse(null, "Contraseña incorrecta.", false);
             }
 
             else if (action === 'change_password') {
@@ -146,44 +126,28 @@ async function handleMockApi(urlStr, options) {
                     return jsonResponse(null, "Faltan datos requeridos.", false);
                 }
 
-                const hash = window.dcodeIO.bcrypt.hashSync(new_password, 10);
-                
-                if (force_reset) {
-                    const { error } = await supabase
-                        .from('public_users')
-                        .update({ password_hash: hash, is_temp_password: true })
-                        .eq('id', user_id);
-                    if (error) throw error;
-                    return jsonResponse(null, "Contraseña restablecida correctamente.");
-                } else {
-                    // Verify current password
-                    const { data: user, error: fetchErr } = await supabase
-                        .from('public_users')
-                        .select('password_hash')
-                        .eq('id', user_id)
-                        .single();
-                    if (fetchErr || !user) {
-                        return jsonResponse(null, "Usuario no encontrado.", false);
-                    }
+                // Call the secure RPC function for password change
+                const { data, error } = await supabase.rpc('change_password', {
+                    p_user_id: user_id,
+                    p_current_password: current_password || '',
+                    p_new_password: new_password,
+                    p_force_reset: force_reset || false
+                });
 
-                    const match = window.dcodeIO.bcrypt.compareSync(current_password, user.password_hash);
-                    if (!match) {
-                        return jsonResponse(null, "La contraseña actual es incorrecta.", false);
-                    }
+                if (error) {
+                    console.error('Supabase RPC change_password error:', error);
+                    return jsonResponse(null, 'Error de base de datos: ' + error.message, false);
+                }
 
-                    const { error } = await supabase
-                        .from('public_users')
-                        .update({ password_hash: hash, is_temp_password: false })
-                        .eq('id', user_id);
-                    if (error) throw error;
-
+                if (data && data.success) {
                     // Update localStorage user if it's the current user
                     if (currentUser && currentUser.id == user_id) {
-                        currentUser.is_temp_password = false;
+                        currentUser.is_temp_password = force_reset ? true : false;
                         localStorage.setItem('krs_user', JSON.stringify(currentUser));
                     }
-
-                    return jsonResponse(null, "Contraseña actualizada correctamente.");
+                    return jsonResponse(null, data.message);
+                } else {
+                    return jsonResponse(null, data ? data.message : "Error al cambiar contraseña.", false);
                 }
             }
         }
@@ -247,32 +211,25 @@ async function handleMockApi(urlStr, options) {
             const userPhone = phone || '';
             const userRole = role || 'server';
 
-            const tempPass = 'KRS2026';
-            const passwordHash = window.dcodeIO.bcrypt.hashSync(tempPass, 10);
-
-            const { data, error } = await supabase
-                .from('public_users')
-                .insert([{
-                    name: userName,
-                    alias,
-                    email: userEmail,
-                    phone: userPhone,
-                    role: userRole,
-                    password_hash: passwordHash,
-                    is_temp_password: true
-                }])
-                .select();
+            // Call secure RPC for user creation (handles hashing server-side)
+            const { data, error } = await supabase.rpc('create_user_with_hash', {
+                p_name: userName,
+                p_alias: alias,
+                p_email: userEmail,
+                p_phone: userPhone,
+                p_role: userRole
+            });
 
             if (error) {
-                let msg = error.message;
-                if (error.code === '23505') { // unique violation in pg
-                    if (msg.includes('alias')) msg = "El Alias ya existe.";
-                    else if (msg.includes('email')) msg = "El Email ya existe.";
-                }
-                return jsonResponse(null, "Error: " + msg, false);
+                console.error('Supabase RPC create_user_with_hash error:', error);
+                return jsonResponse(null, "Error: " + error.message, false);
             }
 
-            return jsonResponse({ alias, password: tempPass }, "Usuario Creado.");
+            if (data && data.success) {
+                return jsonResponse(data.data, data.message);
+            } else {
+                return jsonResponse(null, data ? data.message : "Error al crear usuario.", false);
+            }
         }
 
         else if (method === 'PUT') {
@@ -963,11 +920,14 @@ async function handleMockApi(urlStr, options) {
             const monthStr = String(month).padStart(2, '0');
             const prefix = `${year}-${monthStr}-`;
 
-            // Get events starting with prefix
+            // Get events starting with prefix (using gte and lte for date columns)
+            const startDate = `${year}-${monthStr}-01`;
+            const endDate = `${year}-${monthStr}-31`; // PostgreSQL date logic is fine with this
             const { data: events, error: evErr } = await supabase
                 .from('events')
                 .select('id, event_date')
-                .like('event_date', `${prefix}%`);
+                .gte('event_date', startDate)
+                .lte('event_date', endDate);
             if (evErr) throw evErr;
 
             if (events.length === 0) return rawResponse([]);

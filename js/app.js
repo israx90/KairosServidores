@@ -168,6 +168,66 @@ const App = {
         }
     },
 
+    async initPushNotifications() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            console.warn('Push no soportado en este navegador.');
+            return;
+        }
+
+        // Pide permiso si no se ha pedido
+        let permission = Notification.permission;
+        if (permission === 'default') {
+            permission = await Notification.requestPermission();
+        }
+        
+        if (permission !== 'granted') {
+            console.warn('Permiso de notificaciones denegado o cerrado.');
+            return;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            let subscription = await registration.pushManager.getSubscription();
+            
+            if (!subscription) {
+                // ATENCIÓN: El usuario debe reemplazar esta clave por la generada en Vercel
+                const publicVapidKey = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY'; 
+                if (publicVapidKey === 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY') {
+                    console.warn('Falta configurar la clave pública VAPID en app.js');
+                    return;
+                }
+                
+                const padding = '='.repeat((4 - publicVapidKey.length % 4) % 4);
+                const base64 = (publicVapidKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: outputArray
+                });
+            }
+
+            // Guardar suscripción en base de datos
+            if (this.state.user && this.state.user.id) {
+                await fetch('api/subscribe.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: this.state.user.id,
+                        subscription: subscription
+                    })
+                });
+            }
+            
+        } catch (err) {
+            console.error('Error suscribiendo a Push Notifications', err);
+        }
+    },
+
     showView(viewName) {
         const authSection = document.getElementById('auth-section');
         const dashboardSection = document.getElementById('dashboard-section');
@@ -192,6 +252,7 @@ const App = {
             if (userControls) userControls.style.display = 'flex';
             if (guestControls) guestControls.style.display = 'none';
 
+            this.initPushNotifications();
             this.renderDashboard();
         }
         else if (viewName === 'guest') {

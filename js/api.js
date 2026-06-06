@@ -1171,6 +1171,27 @@ async function handleMockApi(urlStr, options) {
         }
     }
 
+    // ----------------------------------------------------
+    // 13. PUSH SUBSCRIPTION ENDPOINT (api/subscribe.php)
+    // ----------------------------------------------------
+    if (path.endsWith('subscribe.php')) {
+        if (method === 'POST') {
+            const { user_id, subscription } = body;
+            if (!user_id || !subscription) return jsonResponse(null, "Datos incompletos", false);
+
+            const { error } = await supabase
+                .from('push_subscriptions')
+                .upsert({ 
+                    user_id: user_id, 
+                    subscription_json: JSON.stringify(subscription),
+                    endpoint: subscription.endpoint
+                }, { onConflict: 'endpoint' });
+
+            if (error) return jsonResponse(null, "Error al guardar suscripción: " + error.message, false);
+            return jsonResponse(null, "Suscripción guardada");
+        }
+    }
+
     return jsonResponse(null, "Acción o endpoint no emulado: " + path, false);
 }
 

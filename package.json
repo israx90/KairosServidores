@@ -1,0 +1,12 @@
+{
+  "name": "krs-servidores",
+  "version": "1.0.0",
+  "description": "App KRS Servidores",
+  "scripts": {
+    "start": "node api/cron-reminders.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "web-push": "^3.6.7"
+  }
+}

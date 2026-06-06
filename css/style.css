@@ -160,6 +160,22 @@ h6 {
     transform: scale(0.98);
 }
 
+/* Icon Buttons */
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.btn-icon-square {
+    border-radius: 12px;
+}
+
 .btn-secondary:hover {
     background: #3f3f46;
     transform: translateY(-1px);

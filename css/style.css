@@ -389,7 +389,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
     .container {
         padding: 15px;
-        padding-bottom: 20px;
+        padding-bottom: 120px;
     }
 
     /* Mobile Header toggles */

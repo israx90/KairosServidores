@@ -156,7 +156,7 @@ export const Calendar = {
                 statusHtml = `<div class="summary-badge uncovered"><i class="ph-bold ph-warning"></i> \u00a1Vac\u00edo!</div>`;
             }
 
-            const todayMark = isToday ? ' style="border-left-color: #ff8c00; padding-left: 6px;"' : '';
+            const todayMark = isToday ? ' style="color: var(--primary-color);"' : '';
             const pastStyle = isPast ? 'opacity: 0.4;' : '';
 
             // Build event chips

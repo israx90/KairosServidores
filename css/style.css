@@ -14,15 +14,15 @@
     --text-main: #ffffff;
     --text-muted: #a1a1aa;
 
-    --success: #30D158; /* Apple Pastel Green */
-    --warning: #FF9F0A; /* Apple Pastel Orange */
-    --danger: #FF453A;  /* Apple Pastel Red */
+    --success: #32d74b; /* Clean Green */
+    --warning: #ff9f0a; /* Clean Orange */
+    --danger: #ff453a;  /* Clean Red */
 
-    --border-radius: 16px;
+    --border-radius: 20px;
 
-    --glass-border: 1px solid rgba(255, 255, 255, 0.15);
-    --shadow-soft: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 20px rgba(41, 121, 255, 0.3);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+    --shadow-soft: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
+    --shadow-glow: none;
     /* Blue glow */
 
     --font-family: 'Outfit', sans-serif;
@@ -38,10 +38,8 @@ body {
     font-family: var(--font-family);
     background-color: var(--background-dark);
     background-image: 
-        radial-gradient(at 0% 0%, rgba(41, 121, 255, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(156, 39, 176, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(41, 121, 255, 0.08) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(48, 209, 88, 0.05) 0px, transparent 50%);
+        radial-gradient(ellipse at 10% 0%, rgba(41, 121, 255, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 90% 90%, rgba(156, 39, 176, 0.05) 0%, transparent 60%);
     background-attachment: fixed;
     color: var(--text-main);
     line-height: 1.6;
@@ -68,14 +66,14 @@ body {
     background: rgba(255, 255, 255, 0.4);
 }
 
-/* Premium Card Style (Glassmorphism) */
+/* Premium Card Style (Matte Frosted Glass) */
 .glass {
-    background: rgba(24, 24, 27, 0.65);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(28, 28, 30, 0.6);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     border: var(--glass-border);
     box-shadow: var(--shadow-soft);
-    border-radius: 24px;
+    border-radius: var(--border-radius);
 }
 
 .auth-container {
@@ -375,6 +373,28 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         display: block !important;
     }
 
+    /* Bottom Nav Styles (Floating Capsule) */
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        height: 65px;
+        background: rgba(28, 28, 30, 0.7);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 999px;
+        z-index: 1000;
+        padding: 0 10px;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
     /* Sidebar as Hamburger Menu */
     .sidebar {
         position: fixed;
@@ -390,7 +410,6 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         padding-top: 80px;
-        /* Space for close button if needed, or just padding */
         flex-direction: column;
         justify-content: flex-start;
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
@@ -431,6 +450,38 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         font-size: 24px;
     }
 
+    /* Bottom Nav Specific Item Styles */
+    .bottom-nav .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        color: var(--text-muted);
+        text-decoration: none;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        background: transparent !important; /* Override sidebar active bg */
+        box-shadow: none !important;
+        border-radius: 0;
+    }
+
+    .bottom-nav .nav-item .nav-text {
+        font-size: 0.65rem;
+        font-weight: 600;
+        margin: 0; /* Override */
+    }
+
+    .bottom-nav .nav-item.active {
+        color: var(--primary-color) !important;
+        transform: none;
+    }
+    
+    .bottom-nav .nav-item.active i {
+        text-shadow: none;
+    }
+
     .nav-item.active {
         background: var(--primary-color) !important;
         transform: none;
@@ -453,13 +504,13 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
     /* Header fix for small screens */
     header.glass {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 8px;
         padding: 12px 16px !important;
     }
 
-    header.glass h3 {
-        font-size: 1em;
+    header.glass h2 {
+        display: none; /* Ocultar texto en móvil para hacer espacio a los controles */
     }
 
     /* Summary table compact on mobile */
@@ -552,9 +603,9 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         "body body";
     gap: 12px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
-    border-top: 3px solid transparent;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s;
     min-height: 120px;
 }

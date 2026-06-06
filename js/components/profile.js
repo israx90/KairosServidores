@@ -42,8 +42,9 @@ export const Profile = {
                             </button>
                             <input type="file" id="profile-upload" accept="image/*" style="display: none;">
                         </div>
-                            <h3>${user.name}</h3>
-                            <p class="text-gold">${this.translateRole(user.role).toUpperCase()}</p>
+                        <div style="flex: 1; min-width: 0;">
+                            <h3 style="margin: 0 0 5px 0; word-break: break-word;">${user.name}</h3>
+                            <p class="text-gold" style="margin: 0; font-size: 0.85em; font-weight: 600;">${this.translateRole(user.role).toUpperCase()}</p>
                         </div>
                     </div>
 

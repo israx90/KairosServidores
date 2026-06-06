@@ -482,10 +482,10 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         text-shadow: none;
     }
 
-    .nav-item.active {
+    .sidebar .nav-item.active {
         background: var(--primary-color) !important;
         transform: none;
-        box-shadow: 0 4px 15px rgba(41, 121, 255, 0.3);
+        box-shadow: none; /* No shadow */
     }
 
     #logout-btn {

@@ -140,16 +140,27 @@ export const Calendar = {
                 const usersToShow = uniqueUsers.slice(0, maxToShow);
                 const extraCount = uniqueUsers.length - maxToShow;
                 
-                statusHtml = `<div style="display: flex; align-items: center; justify-content: flex-end;">`;
-                usersToShow.forEach((u, i) => {
-                    const zIndex = maxToShow - i;
-                    const marginLeft = i === 0 ? '0' : '-8px';
-                    const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid #00e676;' : 'border: 2px solid var(--bg-lighter);';
+                statusHtml = `<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">`;
+                if (usersToShow.length === 1) {
+                    const u = usersToShow[0];
+                    const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid var(--success);' : 'border: 2px solid rgba(255,255,255,0.1);';
                     const grayscale = u.status === 'confirmed' ? '' : 'filter: grayscale(80%); opacity: 0.8;';
-                    statusHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale} margin-left: ${marginLeft}; z-index: ${zIndex}; position: relative; background: var(--bg-lighter);">`;
-                });
-                if (extraCount > 0) {
-                    statusHtml += `<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-lighter); border: 2px solid var(--bg-color); color: var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 0.7em; margin-left: -8px; z-index: 0; position: relative; font-weight: bold;">+${extraCount}</div>`;
+                    statusHtml += `<span style="font-size: 0.85em; font-weight: 500; color: var(--text-muted);">${u.alias}</span>`;
+                    statusHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale}">`;
+                } else {
+                    let avatarsHtml = `<div style="display: flex;">`;
+                    usersToShow.forEach((u, i) => {
+                        const zIndex = maxToShow - i;
+                        const marginLeft = i === 0 ? '0' : '-8px';
+                        const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid var(--success);' : 'border: 2px solid rgba(255,255,255,0.1);';
+                        const grayscale = u.status === 'confirmed' ? '' : 'filter: grayscale(80%); opacity: 0.8;';
+                        avatarsHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale} margin-left: ${marginLeft}; z-index: ${zIndex}; position: relative;">`;
+                    });
+                    if (extraCount > 0) {
+                        avatarsHtml += `<div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-size: 0.7em; margin-left: -8px; z-index: 0; position: relative; font-weight: bold;">+${extraCount}</div>`;
+                    }
+                    avatarsHtml += `</div>`;
+                    statusHtml += avatarsHtml;
                 }
                 statusHtml += `</div>`;
             } else {

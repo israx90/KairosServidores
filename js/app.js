@@ -1,3 +1,4 @@
+import { showToast } from './utils.js';
 /**
  * Servidor KRS - Main Application Logic
  * Handles Routing, State, and UI Interaction
@@ -108,7 +109,7 @@ const App = {
         const pass = document.getElementById('password').value;
 
         if (!user || !pass) {
-            alert('Por favor completa todos los campos');
+            showToast('Por favor completa todos los campos', 'error');
             return;
         }
 
@@ -142,7 +143,7 @@ const App = {
                 localStorage.setItem('krs_user', JSON.stringify(this.state.user));
 
                 if (this.state.user.is_temp_password == 1) {
-                    alert('Por seguridad, debes cambiar tu contraseña temporal.');
+                    showToast('Por seguridad, debes cambiar tu contraseña temporal.', 'info');
                     this.navigate('settings'); // Redirect to settings
                 }
 
@@ -152,7 +153,7 @@ const App = {
             }
         } catch (error) {
             console.error(error);
-            alert(error.message);
+            showToast(error.message, 'error');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
@@ -332,3 +333,5 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
 });
+
+

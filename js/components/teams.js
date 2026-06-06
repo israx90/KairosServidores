@@ -1,3 +1,4 @@
+import { showToast } from '../utils.js';
 /**
  * Teams Component
  * Handles Team Management (CRUD & Members)
@@ -142,11 +143,11 @@ export const Teams = {
                 Modal.close();
                 this.init(this.container.id); // Refresh
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
             console.error(e);
-            alert('Error al crear equipo');
+            showToast('Error al crear equipo', 'error');
         }
     },
 
@@ -159,7 +160,7 @@ export const Teams = {
             this.openDetailsModal(team);
         } catch (e) {
             console.error(e);
-            alert('Error al cargar detalles');
+            showToast('Error al cargar detalles', 'error');
         }
     },
 
@@ -243,10 +244,10 @@ export const Teams = {
             if (result.success) {
                 this.viewDetails(teamId); // Refresh modal
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -263,10 +264,10 @@ export const Teams = {
             if (result.success) {
                 this.viewDetails(teamId); // Refresh modal
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -278,3 +279,5 @@ export const Teams = {
         }
     }
 };
+
+

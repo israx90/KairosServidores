@@ -1,3 +1,4 @@
+import { showToast } from '../utils.js';
 /**
  * Admin Panel Component
  */
@@ -306,15 +307,15 @@ export const Admin = {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Eventos eliminados');
+                showToast('Eventos eliminados', 'success');
                 this.state.selectedEvents = [];
                 await this.fetchData();
                 this.render();
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -617,7 +618,7 @@ export const Admin = {
     // --- REPORTS ---
     async generateMonthlyReport() {
         if (!window.jspdf || !window.jspdf.jsPDF) {
-            alert("La librería para PDF aún no está cargada. Inténtalo de nuevo en un segundo.");
+            showToast("La librería para PDF aún no está cargada. Inténtalo de nuevo en un segundo.", 'error');
             return;
         }
 
@@ -694,9 +695,11 @@ export const Admin = {
 
         } catch (e) {
             console.error(e);
-            alert("Error al generar el reporte PDF.");
+            showToast('Error al generar el reporte PDF.', 'error');
         } finally {
             if (btn) btn.innerHTML = '<i class="ph-bold ph-file-pdf"></i> Generar Reporte Mensual';
         }
     }
 };
+
+

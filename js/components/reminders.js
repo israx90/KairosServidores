@@ -1,3 +1,4 @@
+import { showToast } from '../utils.js';
 /**
  * Reminders Component
  * Shows tomorrow's assignments with WhatsApp reminder buttons
@@ -147,7 +148,7 @@ export const Reminders = {
         if (!event) return;
         const withPhone = event.assignments.filter(a => a.phone);
         if (withPhone.length === 0) {
-            alert('Ningún servidor tiene número de teléfono registrado.');
+            showToast('Ningún servidor tiene número de teléfono registrado.', 'error');
             return;
         }
         // Open each WhatsApp in sequence with a small delay
@@ -160,3 +161,5 @@ export const Reminders = {
         });
     }
 };
+
+

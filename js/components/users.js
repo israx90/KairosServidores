@@ -1,3 +1,4 @@
+import { showToast } from '../utils.js';
 /**
  * Users Component
  * Handles User Management for Admins and Coordinators
@@ -224,10 +225,10 @@ export const Users = {
                 this.showCredentialsModal(result.data.alias, result.data.password);
                 this.init(this.container.id);
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -288,12 +289,12 @@ export const Users = {
             const result = await response.json();
             if (result.success || !result.message.includes('incorrecta')) {
                 // Note: auth.php might return generic success even if some logic varies, check response
-                alert('Contraseña restablecida exitosamente.');
+                showToast('Contraseña restablecida exitosamente.', 'success');
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -309,10 +310,10 @@ export const Users = {
             if (result.success) {
                 this.init(this.container.id);
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -416,11 +417,13 @@ export const Users = {
                     Modal.close();
                     this.init(this.container.id);
                 } else {
-                    alert('Error: ' + result.message);
+                    showToast(result.message || 'Error', 'error');
                 }
             } catch (err) {
-                alert('Error de conexión');
+                showToast('Error de conexión', 'error');
             }
         });
     }
 };
+
+

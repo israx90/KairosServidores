@@ -1,3 +1,4 @@
+import { showToast } from '../utils.js';
 /**
  * Calendar Component
  * Handles Event Display, Creation, and Editing
@@ -503,14 +504,14 @@ export const Calendar = {
             });
             const result = await response.json();
             if (result.success) {
-                alert(result.message);
+                showToast(result.message || 'Error', 'error');
                 Modal.close();
                 this.init(this.container.id);
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error al crear eventos');
+            showToast('Error al crear eventos', 'error');
         }
     },
 
@@ -526,11 +527,11 @@ export const Calendar = {
                 Modal.close();
                 this.init(this.container.id); // Refresh
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
             console.error(e);
-            alert('Error al crear evento');
+            showToast('Error al crear evento', 'error');
         }
     },
 
@@ -547,10 +548,10 @@ export const Calendar = {
             if (result.success) {
                 this.init(this.container.id); // Refresh
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error al procesar solicitud');
+            showToast('Error al procesar solicitud', 'error');
         }
     },
 
@@ -720,10 +721,10 @@ export const Calendar = {
             if (result.success) {
                 this.viewDetails(eventId); // Refresh modal
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -740,10 +741,10 @@ export const Calendar = {
             if (result.success) {
                 this.viewDetails(eventId); // Refresh modal
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     },
 
@@ -765,13 +766,15 @@ export const Calendar = {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Solicitud de cambio creada exitosamente.');
+                showToast('Solicitud de cambio creada exitosamente.', 'success');
                 this.viewDetails(eventId); // Refresh modal
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     }
 };
+
+

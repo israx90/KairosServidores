@@ -4,7 +4,7 @@
  */
 
 import { API } from '../api.js';
-import { getAvatarHTML, getInitialsAvatar } from '../utils.js';
+import { getAvatarHTML, getInitialsAvatar, showToast } from '../utils.js';
 
 export const Profile = {
     async render(containerId) {
@@ -238,14 +238,14 @@ export const Profile = {
                         headerAvatar.innerHTML = `<img src="${user.profile_pic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy">`;
                     }
 
-                    alert('✅ Foto de perfil actualizada');
+                    showToast('Foto de perfil actualizada', 'success');
                     document.getElementById('cropper-modal').classList.remove('active');
                 } else {
-                    alert('Error: ' + result.message);
+                    showToast(result.message || 'Error al actualizar', 'error');
                 }
             } catch (error) {
                 console.error(error);
-                alert('Error al subir la imagen');
+                showToast('Error al subir la imagen', 'error');
             } finally {
                 const btn = document.getElementById('crop-btn');
                 if (btn) {
@@ -271,17 +271,17 @@ export const Profile = {
             const result = await response.json();
 
             if (result.success) {
-                alert('Perfil actualizado correctamente');
+                showToast('Perfil actualizado correctamente', 'success');
                 // Update local storage user data
                 const currentUser = JSON.parse(localStorage.getItem('krs_user'));
                 const updatedUser = { ...currentUser, ...data };
                 localStorage.setItem('krs_user', JSON.stringify(updatedUser));
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error al actualizar perfil', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Error al conectar con el servidor');
+            showToast('Error al conectar con el servidor', 'error');
         }
     },
 
@@ -301,14 +301,14 @@ export const Profile = {
             const result = await response.json();
 
             if (result.success) {
-                alert('Contraseña cambiada exitosamente');
+                showToast('Contraseña cambiada exitosamente', 'success');
                 e.target.reset();
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error al cambiar contraseña', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Error al conectar con el servidor');
+            showToast('Error al conectar con el servidor', 'error');
         }
     },
 
@@ -401,13 +401,13 @@ export const Profile = {
             });
             const result = await res.json();
             if (result.success) {
-                alert('✅ ¡Turno tomado exitosamente!');
+                showToast('¡Turno tomado exitosamente!', 'success');
                 this.showSwapTab('available');
             } else {
-                alert('Error: ' + result.message);
+                showToast(result.message || 'Error al tomar turno', 'error');
             }
         } catch (e) {
-            alert('Error de conexión');
+            showToast('Error de conexión', 'error');
         }
     }
 };

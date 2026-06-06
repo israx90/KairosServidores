@@ -207,43 +207,35 @@ export const Admin = {
             </div>
 
             <!-- Actions bar -->
-            <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <button id="delete-selected-btn" class="btn btn-danger btn-sm" onclick="Admin.deleteSelectedEvents()" ${selCount === 0 ? 'disabled' : ''}>
-                    <i class="ph-bold ph-trash"></i> Eliminar Seleccionados (${selCount})
+                    <i class="ph-bold ph-trash"></i> Eliminar (${selCount})
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="Admin.toggleAllEventsBtn(this)">
+                    <i class="ph-bold ph-check-square"></i> <span>Seleccionar todos</span>
                 </button>
             </div>
 
-            <div style="max-height: 500px; overflow-y: auto; overflow-x: auto;" id="events-table-wrapper" class="table-responsive">
-                <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <th style="padding: 10px; text-align: left; width: 40px;"><input type="checkbox" id="check-all-events" onclick="Admin.toggleAllEvents(this)"></th>
-                            <th style="padding: 10px; text-align: left;">Evento</th>
-                            <th style="padding: 10px; text-align: left;">Fecha</th>
-                            <th style="padding: 10px; text-align: left;">Hora</th>
-                            <th style="padding: 10px; text-align: left;">Tipo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filtered.map(e => `
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.02)'" onmouseout="this.style.backgroundColor='transparent'">
-                                <td style="padding: 10px;">
-                                    <input type="checkbox" value="${e.id}"
-                                    ${this.state.selectedEvents.includes(e.id) ? 'checked' : ''}
-                                    onchange="Admin.toggleEventSelection(${e.id})">
-                                </td>
-                                <td style="padding: 10px; font-weight: 500;">${e.name}</td>
-                                <td style="padding: 10px;">${e.event_date}</td>
-                                <td style="padding: 10px;">${e.event_time ? e.event_time.substring(0, 5) : ''}</td>
-                                <td style="padding: 10px;">
-                                    <span style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 0.85em; display: inline-block;">
-                                        ${e.type}
-                                    </span>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <!-- Events List (Mobile-first cards) -->
+            <div id="events-table-wrapper" style="display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto;">
+                <!-- Header row (hidden on tiny screens via opacity trick) -->
+                ${filtered.length === 0 ? `<p class="text-muted" style="padding: 20px 0; text-align: center;">No hay eventos para mostrar.</p>` : ''}
+                ${filtered.map(e => `
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.2s;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                        <input type="checkbox" value="${e.id}"
+                            ${this.state.selectedEvents.includes(e.id) ? 'checked' : ''}
+                            onchange="Admin.toggleEventSelection(${e.id})"
+                            style="width:18px;height:18px;flex-shrink:0;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.name}</div>
+                            <div class="text-muted" style="font-size: 0.8em; margin-top: 2px;">
+                                ${e.event_date} &middot; ${e.event_time ? e.event_time.substring(0,5) : ''}
+                            </div>
+                        </div>
+                        <span style="background: rgba(255,255,255,0.08); padding: 3px 10px; border-radius: 99px; font-size: 0.75em; font-weight: 600; flex-shrink: 0; white-space: nowrap;">${e.type}</span>
+                    </label>
+                `).join('')}
             </div>
         `;
     },
@@ -276,9 +268,30 @@ export const Admin = {
         }
     },
 
+    toggleAllEventsBtn(btn) {
+        const rows = document.querySelectorAll('#events-table-wrapper input[type="checkbox"]');
+        const allChecked = Array.from(rows).every(cb => cb.checked);
+        rows.forEach(cb => {
+            cb.checked = !allChecked;
+            const id = parseInt(cb.value);
+            if (!allChecked && !this.state.selectedEvents.includes(id)) {
+                this.state.selectedEvents.push(id);
+            } else if (allChecked) {
+                this.state.selectedEvents = this.state.selectedEvents.filter(eid => eid !== id);
+            }
+        });
+        const span = btn.querySelector('span');
+        if (span) span.textContent = allChecked ? 'Seleccionar todos' : 'Deseleccionar todos';
+        const deleteBtn = document.getElementById('delete-selected-btn');
+        if (deleteBtn) {
+            const count = this.state.selectedEvents.length;
+            deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> Eliminar (${count})`;
+            deleteBtn.disabled = count === 0;
+        }
+    },
+
     toggleAllEvents(checkbox) {
-        // Toggle only visible (filtered) rows
-        const rows = document.querySelectorAll('#events-table-wrapper tbody input[type="checkbox"]');
+        const rows = document.querySelectorAll('#events-table-wrapper input[type="checkbox"]');
         const ids = Array.from(rows).map(cb => parseInt(cb.value));
         if (checkbox.checked) {
             ids.forEach(id => { if (!this.state.selectedEvents.includes(id)) this.state.selectedEvents.push(id); });
@@ -287,7 +300,6 @@ export const Admin = {
             this.state.selectedEvents = this.state.selectedEvents.filter(id => !ids.includes(id));
             rows.forEach(cb => cb.checked = false);
         }
-        // Update button without full re-render
         const btn = document.getElementById('delete-selected-btn');
         if (btn) {
             const count = this.state.selectedEvents.length;

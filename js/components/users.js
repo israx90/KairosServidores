@@ -11,7 +11,7 @@ function avatarHtml(user, size = '32px') {
     const has = pic && pic !== 'null' && pic !== 'assets/default-avatar.svg' && pic !== '';
     if (has) {
         const fallback = initialsHtml(user.alias || user.name || '?', size).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        return `<img src="${pic}" style="width:${size};height:${size};border-radius:50%;object-fit:cover;" onerror="this.outerHTML='${fallback}'">`;
+        return `<img src="${pic}" style="width:${size};height:${size};border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML='${fallback}'">`;
     }
     return initialsHtml(user.alias || user.name || '?', size);
 }
@@ -35,8 +35,6 @@ export const Users = {
         this.container = document.getElementById(containerId);
         if (!this.container) return;
 
-        // Get Role from LocalStorage (Sync with Session roughly)
-        // Ideally we fetch from 'api/auth.php?action=me' but for now trust LS + Backend Rejection
         const user = JSON.parse(localStorage.getItem('krs_user'));
         this.state.currentUserRole = user ? user.role : 'guest';
 
@@ -76,54 +74,29 @@ export const Users = {
                     <button id="create-user-btn" class="btn btn-primary"><i class="ph-bold ph-plus"></i> Nuevo Usuario</button>
                 </div>
 
-                <div class="table-responsive" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; color: var(--text-main);">
-                        <thead>
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
-                                <th style="padding: 10px;">Usuario</th>
-                                <th style="padding: 10px;">Rol</th>
-                                <th style="padding: 10px;">Alias / Teléfono</th>
-                                <th style="padding: 10px; text-align: right;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${users.map(u => `
-                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <td style="padding: 10px; display: flex; align-items: center; gap: 10px;">
-                                        ${avatarHtml(u, '36px')}
-                                        <div>
-                                            <div style="font-weight: 500;">${u.name}</div>
-                                            <div class="text-muted" style="font-size: 0.8em;">${u.email}</div>
-                                        </div>
-                                    </td>
-                                    <td style="padding: 10px;">
-                                        <span class="badge" style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; font-size: 0.85em;">
-                            ${this.translateRole(u.role)}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 10px; font-size: 0.9em;">
-                                        <div>${u.alias || '-'}</div>
-                                        <div class="text-muted">${u.phone || '-'}</div>
-                                    </td>
-                                    <td style="padding: 10px; text-align: right;">
-                                        <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                                            <button class="btn btn-secondary btn-sm" onclick="Users.resetPassword(${u.id}, '${u.name}')" title="Restablecer Contraseña">
-                                                <i class="ph-bold ph-key"></i>
-                                            </button>
-                                            <button class="btn btn-secondary btn-sm" onclick="Users.editUser(${u.id})">
-                                                <i class="ph-bold ph-pencil-simple"></i>
-                                            </button>
-                                            ${isAdmin ? `
-                                            <button class="btn btn-danger btn-sm" onclick="Users.deleteUser(${u.id})">
-                                                <i class="ph-bold ph-trash"></i>
-                                            </button>
-                                            ` : ''}
-                                        </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${users.map(u => `
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                            ${avatarHtml(u, '44px')}
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.name || u.alias}</div>
+                                <div class="text-muted" style="font-size: 0.78em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.email || ''}</div>
+                                <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <span style="background: rgba(41,121,255,0.15); color: var(--primary-color); padding: 2px 10px; border-radius: 99px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${this.translateRole(u.role)}</span>
+                                    ${u.alias ? `<span class="text-muted" style="font-size: 0.78em;">@${u.alias}</span>` : ''}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.resetPassword(${u.id}, '${(u.name || u.alias).replace(/'/g, "\\'")}')">
+                                    <i class="ph-bold ph-key" style="font-size:16px;"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.editUser(${u.id})">
+                                    <i class="ph-bold ph-pencil-simple" style="font-size:16px;"></i>
+                                </button>
+                                ${isAdmin ? `<button class="btn btn-danger btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.deleteUser(${u.id})"><i class="ph-bold ph-trash" style="font-size:16px;"></i></button>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         `;
@@ -199,7 +172,7 @@ export const Users = {
     async createUser(formData) {
         const data = Object.fromEntries(formData.entries());
         const teamId = data.team_id || null;
-        delete data.team_id; // don't send to users API
+        delete data.team_id;
         try {
             const response = await fetch('api/users.php', {
                 method: 'POST',
@@ -208,9 +181,7 @@ export const Users = {
             });
             const result = await response.json();
             if (result.success) {
-                // Assign to team if selected
                 if (teamId && result.data) {
-                    // We need the new user's id — fetch by alias
                     const userRes = await fetch('api/users.php');
                     const allUsers = await userRes.json();
                     const newUser = allUsers.find(u => u.alias === result.data.alias);
@@ -283,12 +254,11 @@ export const Users = {
                     action: 'change_password',
                     user_id: userId,
                     new_password: 'KRS2026',
-                    force_reset: true // Signal to backend this is an admin reset
+                    force_reset: true
                 })
             });
             const result = await response.json();
             if (result.success || !result.message.includes('incorrecta')) {
-                // Note: auth.php might return generic success even if some logic varies, check response
                 showToast('Contraseña restablecida exitosamente.', 'success');
             } else {
                 showToast(result.message || 'Error', 'error');
@@ -395,9 +365,7 @@ export const Users = {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    // Handle team assignment change
                     if (newTeamId !== oldTeamId) {
-                        // Remove from old team
                         if (oldTeamId) {
                             await fetch('api/teams.php', {
                                 method: 'POST',
@@ -405,7 +373,6 @@ export const Users = {
                                 body: JSON.stringify({ action: 'remove_member', team_id: parseInt(oldTeamId), user_id: parseInt(data.id) })
                             });
                         }
-                        // Add to new team
                         if (newTeamId) {
                             await fetch('api/teams.php', {
                                 method: 'POST',
@@ -425,5 +392,3 @@ export const Users = {
         });
     }
 };
-
-

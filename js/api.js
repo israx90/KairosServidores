@@ -114,7 +114,12 @@ async function handleMockApi(urlStr, options) {
                 }
 
                 if (data && data.success) {
-                    return jsonResponse(data.data, data.message);
+                    const userData = data.data;
+                    // Sanitize profile_pic: remove any stale default avatar path
+                    if (userData && (userData.profile_pic === 'default_avatar.svg' || userData.profile_pic === 'assets/default-avatar.svg' || userData.profile_pic === 'null')) {
+                        userData.profile_pic = null;
+                    }
+                    return jsonResponse(userData, data.message);
                 } else {
                     return jsonResponse(null, data ? data.message : "Contraseña incorrecta.", false);
                 }
@@ -261,7 +266,7 @@ async function handleMockApi(urlStr, options) {
             await supabase.from('assignments').delete().eq('user_id', id);
             await supabase.from('team_members').delete().eq('user_id', id);
             await supabase.from('swaps').delete().eq('requester_id', id);
-            await supabase.from('swaps').delete().eq('receiver_id', id);
+            await supabase.from('swaps').delete().eq('target_user_id', id);
 
             const { error } = await supabase
                 .from('public_users')

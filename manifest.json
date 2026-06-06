@@ -1,0 +1,22 @@
+{
+  "name": "Servidores KRS",
+  "short_name": "KRS",
+  "description": "Sistema de Gestión de Equipos - Servidores KRS",
+  "start_url": "./index2.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./logo/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./logo/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

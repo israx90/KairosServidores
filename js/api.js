@@ -257,6 +257,12 @@ async function handleMockApi(urlStr, options) {
             const { id } = body;
             if (!id) return rawResponse({ success: false, message: 'User ID required' });
 
+            // Delete cascading dependencies first
+            await supabase.from('assignments').delete().eq('user_id', id);
+            await supabase.from('team_members').delete().eq('user_id', id);
+            await supabase.from('swaps').delete().eq('requester_id', id);
+            await supabase.from('swaps').delete().eq('receiver_id', id);
+
             const { error } = await supabase
                 .from('public_users')
                 .delete()
@@ -585,7 +591,7 @@ async function handleMockApi(urlStr, options) {
                         ...a,
                         user_name: u ? u.name : 'Desconocido',
                         user_alias: u ? u.alias : '',
-                        profile_pic: u ? u.profile_pic : 'default_avatar.svg',
+                        profile_pic: u ? u.profile_pic : 'assets/default-avatar.svg',
                         team_name: t ? t.name : null
                     };
                 });
@@ -922,7 +928,8 @@ async function handleMockApi(urlStr, options) {
 
             // Get events starting with prefix (using gte and lte for date columns)
             const startDate = `${year}-${monthStr}-01`;
-            const endDate = `${year}-${monthStr}-31`; // PostgreSQL date logic is fine with this
+            const lastDay = new Date(year, month, 0).getDate(); // Gets the last day of the month
+            const endDate = `${year}-${monthStr}-${String(lastDay).padStart(2, '0')}`; 
             const { data: events, error: evErr } = await supabase
                 .from('events')
                 .select('id, event_date')

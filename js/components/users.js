@@ -262,7 +262,7 @@ export const Users = {
         const copyBtn = document.getElementById('copy-creds-btn');
         if (copyBtn) {
             copyBtn.onclick = () => {
-                const text = `Hola! Aquí tienes tus credenciales para KRS:\n\nLink: https://servidoreskrs.page.gd/\nUsuario: ${alias}\nContraseña: ${password}\n\nPor favor ingresa y completa tu perfil.`;
+                const text = `Hola! Aquí tienes tus credenciales para KRS:\n\nLink: https://kairos-servidores-cjcr.vercel.app/\nUsuario: ${alias}\nContraseña: ${password}\n\nPor favor ingresa y completa tu perfil.`;
                 navigator.clipboard.writeText(text).then(() => {
                     copyBtn.innerHTML = '<i class="ph-bold ph-check"></i> Copiado!';
                     setTimeout(() => Modal.close(), 1500);

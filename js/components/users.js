@@ -76,24 +76,26 @@ export const Users = {
 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     ${users.map(u => `
-                        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
-                            ${avatarHtml(u, '44px')}
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.name || u.alias}</div>
-                                <div class="text-muted" style="font-size: 0.78em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.email || ''}</div>
-                                <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                    <span style="background: rgba(41,121,255,0.15); color: var(--primary-color); padding: 2px 10px; border-radius: 99px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${this.translateRole(u.role)}</span>
-                                    ${u.alias ? `<span class="text-muted" style="font-size: 0.78em;">@${u.alias}</span>` : ''}
+                        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap;">
+                            <div style="display: flex; gap: 12px; align-items: center; flex: 1; min-width: 200px;">
+                                ${avatarHtml(u, '44px')}
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.name || u.alias}</div>
+                                    <div class="text-muted" style="font-size: 0.78em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.email || ''}</div>
+                                    <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span style="background: rgba(41,121,255,0.15); color: var(--primary-color); padding: 2px 10px; border-radius: 99px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${this.translateRole(u.role)}</span>
+                                        ${u.alias ? `<span class="text-muted" style="font-size: 0.78em;">@${u.alias}</span>` : ''}
+                                    </div>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 6px; flex-shrink: 0;">
-                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.resetPassword(${u.id}, '${(u.name || u.alias).replace(/'/g, "\\'")}')">
+                            <div style="display: flex; gap: 6px; flex-shrink: 0; margin-left: auto;">
+                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.resetPassword(${u.id}, '${(u.name || u.alias).replace(/'/g, "\\'")}')" title="Contraseña">
                                     <i class="ph-bold ph-key" style="font-size:16px;"></i>
                                 </button>
-                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.editUser(${u.id})">
+                                <button class="btn btn-secondary btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.editUser(${u.id})" title="Editar">
                                     <i class="ph-bold ph-pencil-simple" style="font-size:16px;"></i>
                                 </button>
-                                ${isAdmin ? `<button class="btn btn-danger btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.deleteUser(${u.id})"><i class="ph-bold ph-trash" style="font-size:16px;"></i></button>` : ''}
+                                ${isAdmin ? `<button class="btn btn-danger btn-icon" style="width:36px;height:36px;min-height:36px;" onclick="Users.deleteUser(${u.id})" title="Eliminar"><i class="ph-bold ph-trash" style="font-size:16px;"></i></button>` : ''}
                             </div>
                         </div>
                     `).join('')}

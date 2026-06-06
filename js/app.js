@@ -12,6 +12,8 @@ import { Reports } from './components/reports.js';
 import { Users } from './components/users.js';
 import { Admin } from './components/admin.js';
 import { Reminders } from './components/reminders.js';
+import { Modal } from './components/modal.js';
+import { MyShifts } from './components/my_shifts.js';
 
 import { getAvatarHTML, getInitialsAvatar } from './utils.js';
 
@@ -300,7 +302,7 @@ const App = {
                 Teams.init('main-content');
                 break;
             case 'assignments':
-                mainContent.innerHTML = '<div class="glass" style="padding: 20px;"><h2>Mis Turnos</h2><p>Cargando tus turnos... (En construcción)</p></div>';
+                MyShifts.init('main-content');
                 break;
             case 'reports':
                 Reports.init('main-content');

@@ -99,6 +99,23 @@ export const Profile = {
                             </div>
                             <button type="submit" class="btn btn-danger">Cambiar Contraseña</button>
                         </form>
+                        </form>
+                    </div>
+
+                    <!-- Notificaciones -->
+                    <div style="grid-column: 1 / -1; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px;">
+                        <h3 style="margin-bottom: 15px;"><i class="ph-bold ph-bell-ringing"></i> Notificaciones Push</h3>
+                        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div>
+                                <h4 style="margin: 0;">Recibir recordatorios</h4>
+                                <p class="text-muted" style="font-size: 0.85em; margin-bottom: 0;">Recibe alertas automáticas en tu celular un día antes de tus servicios programados.</p>
+                                <div id="push-status-text" style="font-size: 0.85em; margin-top: 8px; font-weight: bold;"></div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="btn-test-push" class="btn btn-secondary" onclick="Profile.testPushNotification()" style="display: none;"><i class="ph-bold ph-paper-plane-tilt"></i> Probar</button>
+                                <button id="btn-enable-push" class="btn btn-primary" onclick="Profile.enablePushNotifications()">Activar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -148,18 +165,77 @@ export const Profile = {
             btn.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
                 const targetInput = document.getElementById(targetId);
-                const eyeIcon = this.querySelector('i');
-                if (targetInput.type === 'password') {
+                if(targetInput.type === 'password') {
                     targetInput.type = 'text';
-                    eyeIcon.classList.remove('ph-eye');
-                    eyeIcon.classList.add('ph-eye-slash');
+                    this.innerHTML = '<i class="ph-bold ph-eye-slash"></i>';
                 } else {
                     targetInput.type = 'password';
-                    eyeIcon.classList.remove('ph-eye-slash');
-                    eyeIcon.classList.add('ph-eye');
+                    this.innerHTML = '<i class="ph-bold ph-eye"></i>';
                 }
             });
         });
+
+        // Initialize Push Status
+        setTimeout(() => this.checkPushStatus(), 100);
+    },
+
+    async checkPushStatus() {
+        const statusText = document.getElementById('push-status-text');
+        const btnEnable = document.getElementById('btn-enable-push');
+        const btnTest = document.getElementById('btn-test-push');
+        
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            if(statusText) statusText.innerHTML = '<span style="color: var(--danger-color, #f44336);"><i class="ph-bold ph-warning-circle"></i> Tu navegador no soporta Notificaciones Push.</span>';
+            if(btnEnable) btnEnable.style.display = 'none';
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            if(statusText) statusText.innerHTML = '<span style="color: var(--danger-color, #f44336);"><i class="ph-bold ph-lock"></i> Permiso bloqueado. Debes habilitarlo en los ajustes de tu navegador.</span>';
+            if(btnEnable) btnEnable.style.display = 'none';
+            return;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            
+            if (subscription) {
+                if(statusText) statusText.innerHTML = '<span style="color: var(--success-color, #4caf50);"><i class="ph-bold ph-check-circle"></i> Notificaciones activas en este dispositivo.</span>';
+                if(btnEnable) btnEnable.style.display = 'none';
+                if(btnTest) btnTest.style.display = 'inline-flex';
+            } else {
+                if(statusText) statusText.innerHTML = '<span style="color: var(--warning-color, #ff9800);"><i class="ph-bold ph-info"></i> Inactivas. Toca "Activar" para habilitarlas.</span>';
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    },
+
+    async enablePushNotifications() {
+        if (window.App && typeof window.App.initPushNotifications === 'function') {
+            await window.App.initPushNotifications();
+            showToast('Configurando notificaciones...', 'info');
+            setTimeout(() => this.checkPushStatus(), 1000);
+        } else {
+            showToast('No se pudo invocar el registro. Recarga la página.', 'error');
+        }
+    },
+
+    async testPushNotification() {
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            reg.showNotification('¡Prueba Exitosa! 🎉', {
+                body: 'Las notificaciones están funcionando correctamente en tu dispositivo.',
+                icon: './logo/logo.png',
+                badge: './logo/logo.png',
+                vibrate: [200, 100, 200]
+            });
+            showToast('Notificación de prueba enviada', 'success');
+        } catch(e) {
+            console.error('Error enviando prueba:', e);
+            showToast('Error al probar notificación', 'error');
+        }
     },
 
     handleFileSelect(e) {

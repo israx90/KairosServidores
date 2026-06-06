@@ -190,12 +190,14 @@ const App = {
             let subscription = await registration.pushManager.getSubscription();
             
             if (!subscription) {
-                // ATENCIÓN: El usuario debe reemplazar esta clave por la generada en Vercel
-                const publicVapidKey = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY'; 
-                if (publicVapidKey === 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY') {
-                    console.warn('Falta configurar la clave pública VAPID en app.js');
+                // Fetch VAPID key from backend
+                const res = await fetch('api/vapid-public.js');
+                if (!res.ok) {
+                    console.warn('Falta configurar la clave pública VAPID en Vercel (api/vapid-public.js retornó error).');
                     return;
                 }
+                const data = await res.json();
+                const publicVapidKey = data.publicKey;
                 
                 const padding = '='.repeat((4 - publicVapidKey.length % 4) % 4);
                 const base64 = (publicVapidKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -325,8 +327,17 @@ const App = {
         // Update User Profile UI
         if (this.state.user) {
             const avatarBtn = document.getElementById('user-avatar-btn');
+            const aliasHeader = document.getElementById('user-alias-header');
+            const profileWrapper = document.getElementById('user-profile-btn');
+            
             if (avatarBtn) {
                 avatarBtn.innerHTML = getAvatarHTML(this.state.user, '100%');
+            }
+            if (aliasHeader) {
+                aliasHeader.textContent = this.state.user.alias || this.state.user.name.split(' ')[0];
+            }
+            if (profileWrapper) {
+                profileWrapper.onclick = () => this.navigate('settings');
             }
 
             // Show Reports link only for admins/coordinators
@@ -392,6 +403,7 @@ const App = {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
+    window.App = App;
     App.init();
 });
 

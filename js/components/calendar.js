@@ -215,18 +215,58 @@ export const Calendar = {
         const user = JSON.parse(localStorage.getItem('krs_user'));
         const isAdmin = user && (user.role === 'admin' || user.role === 'coordinator');
 
+        // Calcular Estadísticas del Usuario
+        const myAssignments = this.state.events.flatMap(e => 
+            (e.assignments || []).filter(a => a.user_id === user.id).map(a => ({...a, event: e}))
+        );
+        const myTotal = myAssignments.length;
+        const myConfirmed = myAssignments.filter(a => a.status === 'confirmed').length;
+        
+        const now = new Date();
+        const upcoming = myAssignments.filter(a => new Date(a.event.event_date + 'T23:59:59') >= now)
+                                      .sort((a,b) => new Date(a.event.event_date) - new Date(b.event.event_date));
+        
+        let nextServiceHtml = '<span class="text-muted" style="font-size: 0.85rem;">Ninguno próximo</span>';
+        if (upcoming.length > 0) {
+            const next = upcoming[0].event;
+            const dStr = next.event_date.split('-');
+            nextServiceHtml = `<strong style="color: var(--primary-color);">${dStr[2]}/${dStr[1]} a las ${next.event_time.substring(0,5)}</strong><br><span style="font-size: 0.8rem; color: var(--text-muted);">${upcoming[0].role}</span>`;
+        }
+
+        const statsHtml = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                <div class="glass" style="padding: 16px; border-radius: 16px; background: rgba(41, 121, 255, 0.05); border: 1px solid rgba(41, 121, 255, 0.2);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;"><i class="ph-bold ph-user" style="margin-right:4px;"></i>Mis Servicios</div>
+                    <div style="font-size: 1.4rem; font-weight: bold; line-height: 1;">
+                        ${myConfirmed} <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">/ ${myTotal} conf.</span>
+                    </div>
+                    <div style="margin-top: 10px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${myTotal ? (myConfirmed/myTotal)*100 : 0}%; background: ${myConfirmed === myTotal && myTotal > 0 ? '#00e676' : 'var(--primary-color)'}; transition: width 0.5s ease-out;"></div>
+                    </div>
+                </div>
+                <div class="glass" style="padding: 16px; border-radius: 16px; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;"><i class="ph-bold ph-calendar-star" style="margin-right:4px;"></i>Próximo Turno</div>
+                    <div style="font-size: 0.95rem; line-height: 1.3;">
+                        ${nextServiceHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+
         let html = `
             <div class="glass" style="padding: 16px; border-radius: 20px; min-height: calc(100vh - 140px); display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <button id="prev-month" class="btn btn-secondary" style="padding: 10px;"><i class="ph-bold ph-caret-left"></i></button>
                     <h2 style="margin: 0; font-size: 1.3em;">${monthNames[currentMonth]} ${currentYear}</h2>
                     <button id="next-month" class="btn btn-secondary" style="padding: 10px;"><i class="ph-bold ph-caret-right"></i></button>
                 </div>
 
+                ${statsHtml}
+
                 ${this.renderMonthlySummary()}
 
                 ${isAdmin ? `
-                <div style="margin-top: 14px; text-align: right;">
+                <div style="margin-top: 20px; text-align: right;">
                     <button id="add-event-btn" class="btn btn-primary"><i class="ph-bold ph-plus"></i> Nuevo Evento</button>
                 </div>
                 ` : ''}

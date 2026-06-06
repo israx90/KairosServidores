@@ -114,14 +114,20 @@
 
 
                 <div id="user-controls" style="display: none; gap: 10px;">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle-btn" class="btn btn-secondary" style="padding: 8px; border-radius: 50%;">
+                        <i class="ph-bold ph-sun" id="theme-icon"></i>
+                    </button>
                     <!-- Notification Bell -->
                     <button class="btn btn-secondary" style="padding: 8px; border-radius: 50%;">
                         <i class="ph-bold ph-bell"></i>
                     </button>
                     <!-- User Avatar -->
-                    <div id="user-avatar-btn"
-                        style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: pointer;">
-                    
+                    <div id="user-profile-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <span id="user-alias-header" style="font-weight: 600; font-size: 0.95rem; color: #fff;"></span>
+                        <div id="user-avatar-btn"
+                            style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                        </div>
                     </div>
                 </div>
                 <div id="guest-controls" style="display: none;">

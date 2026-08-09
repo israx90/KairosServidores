@@ -741,28 +741,28 @@ export const Calendar = {
         let assignmentsHtml = '';
         if (assignments.length > 0) {
             for (const [teamName, teamAssignments] of Object.entries(assignmentsByTeam)) {
-                assignmentsHtml += `<div style="margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: var(--primary-color); text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">${teamName === 'Sin Área' ? 'OTROS' : '🎥 ' + teamName}</div>`;
+                assignmentsHtml += `<div style="margin-top: 15px; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75em; letter-spacing: 1.5px; padding-left: 12px;">${teamName === 'Sin Área' ? 'OTROS' : teamName}</div>`;
                 assignmentsHtml += teamAssignments.map(a => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            ${getAvatarHTML({ name: a.user_name, alias: a.alias, profile_pic: a.profile_pic }, '32px')}
+                    <div class="list-item-premium">
+                        <div class="avatar-wrapper">
+                            ${getAvatarHTML({ name: a.user_name, alias: a.alias, profile_pic: a.profile_pic }, '30px')}
                             <div>
-                                <div>${a.user_name}</div>
-                                <div class="text-gold" style="font-size: 0.8em;">${a.role}</div>
+                                <div class="user-name">${a.user_name}</div>
+                                <div class="user-role">${a.role}</div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 5px;">
+                        <div class="actions">
                             ${isAdmin && a.phone ? `
-                                <button class="btn btn-success btn-sm" onclick="Calendar.notifyUser('${a.phone}', '${a.user_name}', '${a.role}', '${event.event_date}', '${event.event_time}')" title="Notificar por WhatsApp" style="background: #25D366; border-color: #25D366; color: white;"><i class="ph-bold ph-whatsapp-logo"></i></button>
+                                <button class="btn-icon-subtle success" onclick="Calendar.notifyUser('${a.phone}', '${a.user_name}', '${a.role}', '${event.event_date}', '${event.event_time}')" title="Notificar por WhatsApp"><i class="ph-bold ph-whatsapp-logo"></i></button>
                             ` : ''}
                             ${(user && user.id == a.user_id && a.status !== 'confirmed') ? `
-                                <button class="btn btn-success btn-sm" onclick="Calendar.confirmAssignment(${a.id}, ${event.id})" title="Confirmar Asistencia" style="background: #00e676; border-color: #00e676; color: black;"><i class="ph-bold ph-check-circle"></i> Confirmar</button>
+                                <button class="btn-icon-subtle success" onclick="Calendar.confirmAssignment(${a.id}, ${event.id})" title="Confirmar Asistencia"><i class="ph-bold ph-check-circle"></i></button>
                             ` : ''}
                             ${(user && user.id == a.user_id) ? `
-                                <button class="btn btn-warning btn-sm" onclick="Calendar.requestSwap(${a.id}, ${event.id})" title="Solicitar Cambio"><i class="ph-bold ph-arrows-left-right"></i></button>
+                                <button class="btn-icon-subtle warning" onclick="Calendar.requestSwap(${a.id}, ${event.id})" title="Solicitar Cambio"><i class="ph-bold ph-arrows-left-right"></i></button>
                             ` : ''}
                             ${isAdmin || (user && user.id == a.user_id) ? `
-                                <button class="btn btn-danger btn-sm" onclick="Calendar.deleteAssignment(${a.id}, ${event.id})" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
+                                <button class="btn-icon-subtle danger" onclick="Calendar.deleteAssignment(${a.id}, ${event.id})" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
                             ` : ''}
                         </div>
                     </div>

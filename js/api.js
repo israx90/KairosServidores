@@ -246,7 +246,7 @@ async function handleMockApi(urlStr, options) {
             if (alias !== undefined) updates.alias = alias;
             if (email !== undefined) updates.email = email;
             if (phone !== undefined) updates.phone = phone;
-            if (birthdate !== undefined) updates.birthdate = birthdate;
+            if (birthdate !== undefined) updates.birthdate = birthdate || null;
             if (role !== undefined && currentUser && currentUser.role === 'admin') updates.role = role;
 
             const { error } = await supabase

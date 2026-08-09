@@ -12,7 +12,13 @@ function avatarHtml(user, size = '30px') {
         user.profile_pic !== 'assets/default-avatar.svg' &&
         user.profile_pic !== '';
     if (has) {
-        return `<img src="${user.profile_pic}" style="width:${size};height:${size};border-radius:50%;object-fit:cover;">`;
+        const initials = (user.name || '?').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        const colors = ['#2979ff', '#e91e63', '#9c27b0', '#00bcd4', '#4caf50', '#ff5722', '#ffc107'];
+        let h = 0; for (let c of (user.name || '')) h = c.charCodeAt(0) + ((h << 5) - h);
+        const bg = colors[Math.abs(h) % colors.length];
+        const fallback = `<div style="width:${size};height:${size};border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:calc(${size} * 0.38);color:#fff;flex-shrink:0;">${initials}</div>`;
+        const safeFallback = fallback.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return `<img src="${user.profile_pic}" style="width:${size};height:${size};border-radius:50%;object-fit:cover;" onerror="this.outerHTML='${safeFallback}'">`;
     }
     const initials = (user.name || '?').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     const colors = ['#2979ff', '#e91e63', '#9c27b0', '#00bcd4', '#4caf50', '#ff5722', '#ffc107'];

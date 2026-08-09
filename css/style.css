@@ -775,3 +775,81 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
         padding: 0 !important;
     }
 }
+
+/* ========================================= */
+/* Minimalist Premium Lists                  */
+/* ========================================= */
+.list-item-premium {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    border-radius: 12px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+.list-item-premium:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+.list-item-premium .avatar-wrapper {
+    display: flex; 
+    align-items: center; 
+    gap: 12px;
+}
+.list-item-premium .user-name {
+    font-weight: 500;
+    color: #ffffff;
+    line-height: 1.2;
+    font-size: 0.95em;
+}
+.list-item-premium .user-role {
+    font-size: 0.75em;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.list-item-premium .actions {
+    display: flex; 
+    gap: 4px;
+}
+@media (min-width: 768px) {
+    .list-item-premium .actions {
+        opacity: 0.3;
+        transition: opacity 0.2s;
+    }
+    .list-item-premium:hover .actions {
+        opacity: 1;
+    }
+}
+
+/* Subtle Icon Buttons */
+.btn-icon-subtle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+}
+.btn-icon-subtle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+.btn-icon-subtle.danger:hover {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--danger);
+}
+.btn-icon-subtle.success:hover {
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--success);
+}
+.btn-icon-subtle.warning:hover {
+    background: rgba(255, 159, 10, 0.15);
+    color: var(--warning);
+}

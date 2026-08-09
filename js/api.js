@@ -441,7 +441,22 @@ async function handleMockApi(urlStr, options) {
                 const { data: events, error: evErr } = await supabase.from('events').select('*').order('event_date', { ascending: true }).order('event_time', { ascending: true });
                 if (evErr) throw evErr;
 
-                const mappedEvents = events.map(e => {
+                // Filter events by team visibility for non-admin users
+                let filteredEvents = events;
+                if (currentUser && currentUser.role === 'server') {
+                    // Get user's team IDs
+                    const { data: memberships } = await supabase.from('team_members').select('team_id').eq('user_id', currentUser.id);
+                    const userTeamIds = memberships ? memberships.map(m => m.team_id) : [];
+
+                    filteredEvents = events.filter(e => {
+                        // If event has no team restriction, everyone sees it
+                        if (!e.visible_team_ids || e.visible_team_ids.length === 0) return true;
+                        // Otherwise only if user belongs to one of the allowed teams
+                        return e.visible_team_ids.some(tid => userTeamIds.includes(tid));
+                    });
+                }
+
+                const mappedEvents = filteredEvents.map(e => {
                     const et = eventTypes.find(type => type.name === e.type);
                     return {
                         ...e,
@@ -491,6 +506,7 @@ async function handleMockApi(urlStr, options) {
 
                 const cleanDate = event_date.replace(/[^0-9\-]/g, '');
                 const cleanTime = event_time || '00:00:00';
+                const visibleTeamIds = body.visible_team_ids || null;
 
                 const { data, error } = await supabase
                     .from('events')
@@ -498,7 +514,8 @@ async function handleMockApi(urlStr, options) {
                         name,
                         event_date: cleanDate,
                         event_time: cleanTime,
-                        type
+                        type,
+                        visible_team_ids: visibleTeamIds
                     }])
                     .select();
 

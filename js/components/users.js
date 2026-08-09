@@ -82,8 +82,9 @@ export const Users = {
                                 <div style="flex: 1; min-width: 0;">
                                     <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.name || u.alias}</div>
                                     <div class="text-muted" style="font-size: 0.78em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.email || ''}</div>
-                                    <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                     <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                         <span style="background: rgba(41,121,255,0.15); color: var(--primary-color); padding: 2px 10px; border-radius: 99px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${this.translateRole(u.role)}</span>
+                                        ${u.team_names && u.team_names.length > 0 ? u.team_names.map(tn => `<span style="background: rgba(255,193,7,0.15); color: #ffc107; padding: 2px 10px; border-radius: 99px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${tn}</span>`).join('') : ''}
                                         ${u.alias ? `<span class="text-muted" style="font-size: 0.78em;">@${u.alias}</span>` : ''}
                                     </div>
                                 </div>
@@ -129,9 +130,11 @@ export const Users = {
                 <option value="admin">Administrador</option>
             `;
 
-        const teamOptions = this.state.teams.map(t =>
-            `<option value="${t.id}">${t.name}</option>`
-        ).join('');
+        const teamCheckboxes = this.state.teams.map(t => `
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <input type="checkbox" name="team_ids" value="${t.id}"> ${t.name}
+            </label>
+        `).join('');
 
         const content = `
             <form id="create-user-form">
@@ -148,11 +151,10 @@ export const Users = {
                 </div>
 
                 <div class="input-group">
-                    <label>Equipo <span class="text-muted" style="font-size:0.8em;">(opcional)</span></label>
-                    <select name="team_id" class="form-control">
-                        <option value="">— Sin equipo —</option>
-                        ${teamOptions}
-                    </select>
+                    <label>Equipos <span class="text-muted" style="font-size:0.8em;">(opcional)</span></label>
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto;">
+                        ${teamCheckboxes}
+                    </div>
                 </div>
 
                 <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -172,9 +174,9 @@ export const Users = {
     },
 
     async createUser(formData) {
+        const teamIds = formData.getAll('team_ids');
         const data = Object.fromEntries(formData.entries());
-        const teamId = data.team_id || null;
-        delete data.team_id;
+        delete data.team_ids;
         try {
             const response = await fetch('api/users.php', {
                 method: 'POST',
@@ -183,16 +185,18 @@ export const Users = {
             });
             const result = await response.json();
             if (result.success) {
-                if (teamId && result.data) {
+                if (teamIds.length > 0 && result.data) {
                     const userRes = await fetch('api/users.php');
                     const allUsers = await userRes.json();
                     const newUser = allUsers.find(u => u.alias === result.data.alias);
-                    if (newUser && teamId) {
-                        await fetch('api/teams.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'add_member', team_id: parseInt(teamId), user_id: newUser.id })
-                        });
+                    if (newUser) {
+                        for (const tid of teamIds) {
+                            await fetch('api/teams.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'add_member', team_id: parseInt(tid), user_id: newUser.id })
+                            });
+                        }
                     }
                 }
                 this.showCredentialsModal(result.data.alias, result.data.password);
@@ -301,17 +305,18 @@ export const Users = {
             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrador</option>
         ` : `<option value="${user.role}">${this.translateRole(user.role)}</option>`;
 
-        const teamOptions = [
-            `<option value="">— Sin equipo —</option>`,
-            ...this.state.teams.map(t =>
-                `<option value="${t.id}" ${user.team_id == t.id ? 'selected' : ''}>${t.name}</option>`
-            )
-        ].join('');
+        const teamCheckboxes = this.state.teams.map(t => {
+            const isChecked = user.team_ids && user.team_ids.includes(t.id) ? 'checked' : '';
+            return `
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <input type="checkbox" name="team_ids" value="${t.id}" ${isChecked}> ${t.name}
+            </label>
+            `;
+        }).join('');
 
         const content = `
             <form id="edit-user-form">
                 <input type="hidden" name="id" value="${user.id}">
-                <input type="hidden" name="current_team_id" value="${user.team_id || ''}">
                 <div class="input-group">
                     <label>Nombre Completo</label>
                     <input type="text" name="name" class="form-control" value="${user.name || ''}" required>
@@ -339,10 +344,10 @@ export const Users = {
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Equipo <span class="text-muted" style="font-size:0.8em;">(opcional)</span></label>
-                    <select name="team_id" class="form-control">
-                        ${teamOptions}
-                    </select>
+                    <label>Equipos <span class="text-muted" style="font-size:0.8em;">(opcional)</span></label>
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto;">
+                        ${teamCheckboxes}
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%">Guardar Cambios</button>
             </form>
@@ -353,11 +358,9 @@ export const Users = {
         document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
+            const newTeamIds = formData.getAll('team_ids').map(id => parseInt(id));
             const data = Object.fromEntries(formData.entries());
-            const newTeamId = data.team_id || null;
-            const oldTeamId = data.current_team_id || null;
-            delete data.team_id;
-            delete data.current_team_id;
+            delete data.team_ids;
 
             try {
                 const response = await fetch('api/users.php', {
@@ -367,21 +370,23 @@ export const Users = {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    if (newTeamId !== oldTeamId) {
-                        if (oldTeamId) {
-                            await fetch('api/teams.php', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'remove_member', team_id: parseInt(oldTeamId), user_id: parseInt(data.id) })
-                            });
-                        }
-                        if (newTeamId) {
-                            await fetch('api/teams.php', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'add_member', team_id: parseInt(newTeamId), user_id: parseInt(data.id) })
-                            });
-                        }
+                    const oldTeamIds = user.team_ids || [];
+                    const toRemove = oldTeamIds.filter(id => !newTeamIds.includes(id));
+                    const toAdd = newTeamIds.filter(id => !oldTeamIds.includes(id));
+
+                    for (const tid of toRemove) {
+                        await fetch('api/teams.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'remove_member', team_id: tid, user_id: parseInt(data.id) })
+                        });
+                    }
+                    for (const tid of toAdd) {
+                        await fetch('api/teams.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'add_member', team_id: tid, user_id: parseInt(data.id) })
+                        });
                     }
                     Modal.close();
                     this.init(this.container.id);

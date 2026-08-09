@@ -14,6 +14,7 @@ export function getAvatarHTML(user, size = '40px') {
     const hasPic = pic &&
         pic !== 'null' &&
         pic !== 'assets/default-avatar.svg' &&
+        pic !== 'default_avatar.svg' &&
         pic !== '';
 
     if (hasPic) {

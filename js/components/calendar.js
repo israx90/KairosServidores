@@ -496,6 +496,22 @@ export const Calendar = {
                     </select>
                     <div id="type-color-preview" style="display:flex; align-items:center; gap:8px; margin-top:6px; font-size:0.85em; color:var(--text-muted);"></div>
                 </div>
+
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 0;">
+                        <input type="checkbox" id="exclusive_check" style="width: 16px; height: 16px;">
+                        <span style="font-size: 0.9em; font-weight: 600;"><i class="ph-bold ph-lock"></i> Evento exclusivo para</span>
+                    </label>
+                    <div id="exclusive-teams" style="display:none; margin-top: 10px; padding-left: 4px;">
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 8px;">Solo los equipos marcados podrán ver este evento:</p>
+                        ${this.state.teams.map(t => `
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer;">
+                                <input type="checkbox" name="visible_team_ids" value="${t.id}"> ${t.name}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary" style="width: 100%">Crear Evento(s)</button>
             </form>
         `;
@@ -511,6 +527,14 @@ export const Calendar = {
             recurOptions.style.display = e.target.checked ? 'block' : 'none';
             endDateInput.required = e.target.checked;
         });
+
+        const exclusiveCheck = document.getElementById('exclusive_check');
+        const exclusiveTeams = document.getElementById('exclusive-teams');
+        if (exclusiveCheck) {
+            exclusiveCheck.addEventListener('change', (e) => {
+                exclusiveTeams.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
 
         // Color preview for type select
         const typeSelect = document.getElementById('event-type-select');
@@ -530,6 +554,13 @@ export const Calendar = {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
+            // Collect visible_team_ids as an array (checkboxes)
+            const visibleTeamIds = formData.getAll('visible_team_ids');
+            if (visibleTeamIds.length > 0) {
+                data.visible_team_ids = visibleTeamIds.map(id => parseInt(id));
+            } else {
+                delete data.visible_team_ids;
+            }
 
             // Handle Batch Logic Client-Side based on Frequency
             if (rangeCheck.checked && data.frequency !== 'once') {

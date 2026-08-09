@@ -166,7 +166,10 @@ async function handleMockApi(urlStr, options) {
             const id = searchParams.get('id');
             
             // Query users, team memberships and teams
-            const { data: users, error: userErr } = await supabase.from('public_users').select('*');
+            // We intentionally exclude profile_pic from the list query (can be hundreds of KB per user)
+            // profile_pic is only returned when fetching a single user by id
+            const selectFields = id ? '*' : 'id, name, alias, email, phone, role, username';
+            const { data: users, error: userErr } = await supabase.from('public_users').select(selectFields);
             if (userErr) throw userErr;
 
             const { data: memberships, error: memErr } = await supabase.from('team_members').select('*');
@@ -602,7 +605,13 @@ async function handleMockApi(urlStr, options) {
 
                 if (assignments.length === 0) return rawResponse([]);
 
-                const { data: users, error: usrErr } = await supabase.from('public_users').select('id, name, alias, profile_pic, phone');
+                // Fetch ONLY the users assigned to this event (not all users)
+                // This way we can safely include profile_pic without fetching all base64 photos
+                const assignedUserIds = [...new Set(assignments.map(a => a.user_id))];
+                const { data: users, error: usrErr } = await supabase
+                    .from('public_users')
+                    .select('id, name, alias, profile_pic, phone')
+                    .in('id', assignedUserIds);
                 if (usrErr) throw usrErr;
 
                 const { data: teams, error: tmErr } = await supabase.from('teams').select('id, name');
@@ -615,7 +624,7 @@ async function handleMockApi(urlStr, options) {
                         ...a,
                         user_name: u ? u.name : 'Desconocido',
                         user_alias: u ? u.alias : '',
-                        profile_pic: (u && u.profile_pic && u.profile_pic !== '' && u.profile_pic !== 'null') ? u.profile_pic : null,
+                        profile_pic: (u && u.profile_pic && u.profile_pic !== '' && u.profile_pic !== 'null' && u.profile_pic !== 'default_avatar.svg' && u.profile_pic !== 'assets/default-avatar.svg') ? u.profile_pic : null,
                         phone: u ? u.phone : null,
                         team_name: t ? t.name : null
                     };
@@ -977,9 +986,11 @@ async function handleMockApi(urlStr, options) {
             const userIds = [...new Set(assignments.map(a => a.user_id))];
             let allUsers = [];
             if (userIds.length > 0) {
+                // Exclude profile_pic from bulk user fetch - it's large base64 data
+                // The frontend resolves avatars from its own state or per-user fetch
                 const { data: usersData } = await supabase
                     .from('public_users')
-                    .select('id, name, alias, profile_pic')
+                    .select('id, name, alias')
                     .in('id', userIds);
                 if (usersData) allUsers = usersData;
             }
@@ -1010,7 +1021,7 @@ async function handleMockApi(urlStr, options) {
                             id: u.id,
                             alias: u.alias || u.name,
                             name: u.name,
-                            profile_pic: (u.profile_pic && u.profile_pic !== '' && u.profile_pic !== 'null') ? u.profile_pic : null,
+                            profile_pic: null, // Not fetched in bulk - resolved by frontend from user state
                             status: a.status
                         });
                     }

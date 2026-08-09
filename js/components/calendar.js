@@ -14,7 +14,8 @@ export const Calendar = {
         currentYear: new Date().getFullYear(),
         users: [],
         eventTypes: [], // Loaded dynamically from API
-        monthSummary: [] // Coverage data per day
+        monthSummary: [], // Coverage data per day
+        teams: []
     },
 
     async init(containerId) {
@@ -23,7 +24,7 @@ export const Calendar = {
 
         Modal.init();
 
-        await Promise.all([this.fetchEvents(), this.fetchUsers(), this.fetchEventTypes(), this.fetchMonthSummary()]);
+        await Promise.all([this.fetchEvents(), this.fetchUsers(), this.fetchEventTypes(), this.fetchMonthSummary(), this.fetchTeams()]);
         this.render();
     },
 
@@ -70,6 +71,16 @@ export const Calendar = {
                 { id: 2, name: 'Jovenes' },
                 { id: 3, name: 'Especial' }
             ];
+        }
+    },
+
+    async fetchTeams() {
+        try {
+            const response = await fetch('api/teams.php');
+            this.state.teams = await response.json();
+        } catch (error) {
+            console.error('Error fetching teams:', error);
+            this.state.teams = [];
         }
     },
 
@@ -678,11 +689,19 @@ export const Calendar = {
             </div>
         `;
 
-        // Assignments List
-        content += `
-            <h4 style="margin-bottom: 10px;">Voluntarios Asignados</h4>
-            <div style="max-height: 200px; overflow-y: auto; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-                ${assignments.length > 0 ? assignments.map(a => `
+        // Group assignments by team_name
+        const assignmentsByTeam = {};
+        assignments.forEach(a => {
+            const tName = a.team_name || 'Sin Área';
+            if (!assignmentsByTeam[tName]) assignmentsByTeam[tName] = [];
+            assignmentsByTeam[tName].push(a);
+        });
+
+        let assignmentsHtml = '';
+        if (assignments.length > 0) {
+            for (const [teamName, teamAssignments] of Object.entries(assignmentsByTeam)) {
+                assignmentsHtml += `<div style="margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: var(--primary-color); text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">${teamName === 'Sin Área' ? 'OTROS' : '🎥 ' + teamName}</div>`;
+                assignmentsHtml += teamAssignments.map(a => `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             ${getAvatarHTML({ name: a.user_name, alias: a.alias, profile_pic: a.profile_pic }, '32px')}
@@ -706,7 +725,16 @@ export const Calendar = {
                             ` : ''}
                         </div>
                     </div>
-                `).join('') : '<p class="text-muted">Nadie ha sido asignado aún.</p>'}
+                `).join('');
+            }
+        } else {
+            assignmentsHtml = '<p class="text-muted">Nadie ha sido asignado aún.</p>';
+        }
+
+        content += `
+            <h4 style="margin-bottom: 10px;">Voluntarios Asignados</h4>
+            <div style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
+                ${assignmentsHtml}
             </div>
         `;
 
@@ -718,7 +746,14 @@ export const Calendar = {
                     <i class="ph-bold ph-hand-waving"></i> ¡Apoyaré!
                 </button>
                 <form id="self-assign-form" style="display: none; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: left;">
-                    <h4 style="margin-bottom: 10px;">Selecciona tu rol</h4>
+                    <h4 style="margin-bottom: 10px;">Selecciona tu Área y Rol</h4>
+                    <div class="input-group">
+                        <label>Área / Equipo</label>
+                        <select name="team_id" class="form-control" required>
+                            <option value="">Selecciona...</option>
+                            ${this.state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                        </select>
+                    </div>
                     <div class="input-group">
                         <label>Rol / Función</label>
                         <select name="role" class="form-control" required>
@@ -742,6 +777,13 @@ export const Calendar = {
                     <select name="user_id" class="form-control" required>
                         <option value="">Seleccionar...</option>
                         ${this.state.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Área / Equipo</label>
+                    <select name="team_id" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                        ${this.state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
                     </select>
                 </div>
                 <div class="input-group">
@@ -776,7 +818,7 @@ export const Calendar = {
             selfAssignForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                this.createAssignment(event.id, user.id, formData.get('role'));
+                this.createAssignment(event.id, user.id, formData.get('role'), formData.get('team_id'));
             });
         }
 
@@ -787,18 +829,18 @@ export const Calendar = {
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     const data = Object.fromEntries(formData.entries());
-                    this.createAssignment(event.id, data.user_id, data.role);
+                    this.createAssignment(event.id, data.user_id, data.role, data.team_id);
                 });
             }
         }
     },
 
-    async createAssignment(eventId, userId, role) {
+    async createAssignment(eventId, userId, role, teamId = null) {
         try {
             const response = await fetch('api/assignments.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event_id: eventId, user_id: userId, role: role })
+                body: JSON.stringify({ event_id: eventId, user_id: userId, role: role, team_id: teamId })
             });
             const result = await response.json();
             if (result.success) {

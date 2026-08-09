@@ -5,7 +5,7 @@ import { showToast } from '../utils.js';
  */
 
 import { Modal } from './modal.js';
-import { getAvatarHTML } from '../utils.js';
+import { getAvatarHTML, getInitialsAvatar } from '../utils.js';
 
 export const Calendar = {
     state: {
@@ -145,8 +145,9 @@ export const Calendar = {
                     const u = usersToShow[0];
                     const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid var(--success);' : 'border: 2px solid rgba(255,255,255,0.1);';
                     const grayscale = u.status === 'confirmed' ? '' : 'filter: grayscale(80%); opacity: 0.8;';
+                    const fallback = getInitialsAvatar(u.alias || u.name, '28px').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                     statusHtml += `<span style="font-size: 0.85em; font-weight: 500; color: var(--text-muted);">${u.alias}</span>`;
-                    statusHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale}">`;
+                    statusHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale}" onerror="this.outerHTML='${fallback}'">`;
                 } else {
                     let avatarsHtml = `<div style="display: flex;">`;
                     usersToShow.forEach((u, i) => {
@@ -154,7 +155,8 @@ export const Calendar = {
                         const marginLeft = i === 0 ? '0' : '-8px';
                         const confirmBorder = u.status === 'confirmed' ? 'border: 2px solid var(--success);' : 'border: 2px solid rgba(255,255,255,0.1);';
                         const grayscale = u.status === 'confirmed' ? '' : 'filter: grayscale(80%); opacity: 0.8;';
-                        avatarsHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale} margin-left: ${marginLeft}; z-index: ${zIndex}; position: relative;">`;
+                        const fallback = getInitialsAvatar(u.alias || u.name, '28px').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        avatarsHtml += `<img src="${u.profile_pic}" title="${u.alias} (${u.status})" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; ${confirmBorder} ${grayscale} margin-left: ${marginLeft}; z-index: ${zIndex}; position: relative;" onerror="this.outerHTML='${fallback}'">`;
                     });
                     if (extraCount > 0) {
                         avatarsHtml += `<div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-size: 0.7em; margin-left: -8px; z-index: 0; position: relative; font-weight: bold;">+${extraCount}</div>`;

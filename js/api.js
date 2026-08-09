@@ -178,16 +178,18 @@ async function handleMockApi(urlStr, options) {
             // Map user details with team details
             const mappedUsers = users.map(u => {
                 delete u.password_hash;
-                const membership = memberships.find(m => m.user_id === u.id);
-                if (membership) {
-                    const team = teams.find(t => t.id === membership.team_id);
+                const userMemberships = memberships.filter(m => m.user_id === u.id);
+                if (userMemberships.length > 0) {
+                    const userTeams = userMemberships.map(m => teams.find(t => t.id === m.team_id)).filter(Boolean);
                     return {
                         ...u,
-                        team_id: membership.team_id,
-                        team_name: team ? team.name : null
+                        team_id: userTeams.length > 0 ? userTeams[0].id : null,
+                        team_name: userTeams.length > 0 ? userTeams[0].name : null,
+                        team_ids: userTeams.map(t => t.id),
+                        team_names: userTeams.map(t => t.name)
                     };
                 }
-                return { ...u, team_id: null, team_name: null };
+                return { ...u, team_id: null, team_name: null, team_ids: [], team_names: [] };
             });
 
             if (id) {

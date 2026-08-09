@@ -681,6 +681,16 @@ export const Calendar = {
             }
         }
 
+        // Find the current volunteer's teams from state (already loaded)
+        // so the self-assign form only shows teams they belong to
+        let userTeams = this.state.teams; // default: all teams (for admin)
+        if (isVolunteer && user) {
+            const userProfile = this.state.users.find(u => u.id == user.id);
+            if (userProfile && userProfile.team_ids && userProfile.team_ids.length > 0) {
+                userTeams = this.state.teams.filter(t => userProfile.team_ids.includes(t.id));
+            }
+        }
+
         let content = `
             <div style="margin-bottom: 20px;">
                 <p><strong>Fecha:</strong> ${event.event_date}</p>
@@ -751,7 +761,7 @@ export const Calendar = {
                         <label>Área / Equipo</label>
                         <select name="team_id" class="form-control" required>
                             <option value="">Selecciona...</option>
-                            ${this.state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                            ${userTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
                         </select>
                     </div>
                     <div class="input-group">

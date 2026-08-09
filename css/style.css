@@ -326,15 +326,20 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     display: grid;
     grid-template-columns: 260px 1fr;
     gap: 30px;
-    padding-top: 30px;
+    padding-top: 10px;
 }
 
 .sidebar {
     position: sticky;
-    top: 30px;
-    height: calc(100vh - 60px);
+    top: 90px;
+    height: calc(100vh - 110px);
     display: flex;
     flex-direction: column;
+}
+
+/* Bottom Nav Default (Hidden on Desktop) */
+.bottom-nav {
+    display: none;
 }
 
 /* Sidebar Nav */
@@ -390,6 +395,13 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     .container {
         padding: 15px;
         padding-bottom: 120px;
+    }
+    
+    /* Top header adjustments for mobile */
+    #dashboard-section > header {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 0 20px 20px !important;
     }
 
     /* Mobile Header toggles */

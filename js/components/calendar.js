@@ -787,14 +787,23 @@ export const Calendar = {
                     <i class="ph-bold ph-hand-waving"></i> ¡Apoyaré!
                 </button>
                 <form id="self-assign-form" style="display: none; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: left;">
-                    <h4 style="margin-bottom: 10px;">Selecciona tu Área y Rol</h4>
-                    <div class="input-group">
-                        <label>Área / Equipo</label>
-                        <select name="team_id" class="form-control" required>
-                            <option value="">Selecciona...</option>
-                            ${userTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
-                        </select>
-                    </div>
+                    <h4 style="margin-bottom: 10px;">Selecciona tu Rol</h4>
+                    ${userTeams.length === 1 ? `
+                        <!-- Single team: auto-select, show label only -->
+                        <input type="hidden" name="team_id" value="${userTeams[0].id}">
+                        <div style="margin-bottom: 12px; padding: 8px 12px; background: rgba(255,255,255,0.07); border-radius: 8px; font-size: 0.9em;">
+                            <i class="ph-bold ph-users-three" style="color: var(--primary-color);"></i>
+                            Área: <strong>${userTeams[0].name}</strong>
+                        </div>
+                    ` : userTeams.length > 1 ? `
+                        <!-- Multiple teams: show dropdown without blank option -->
+                        <div class="input-group">
+                            <label>Área / Equipo</label>
+                            <select name="team_id" class="form-control" required>
+                                ${userTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    ` : ''}
                     <div class="input-group">
                         <label>Rol / Función</label>
                         <select name="role" class="form-control" required>

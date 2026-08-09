@@ -598,7 +598,7 @@ async function handleMockApi(urlStr, options) {
                         ...a,
                         user_name: u ? u.name : 'Desconocido',
                         user_alias: u ? u.alias : '',
-                        profile_pic: u ? u.profile_pic : 'assets/default-avatar.svg',
+                        profile_pic: (u && u.profile_pic && u.profile_pic !== '' && u.profile_pic !== 'null') ? u.profile_pic : null,
                         phone: u ? u.phone : null,
                         team_name: t ? t.name : null
                     };
@@ -992,7 +992,8 @@ async function handleMockApi(urlStr, options) {
                         summaryMap[date].users.push({
                             id: u.id,
                             alias: u.alias || u.name,
-                            profile_pic: u.profile_pic || 'assets/default-avatar.svg',
+                            name: u.name,
+                            profile_pic: (u.profile_pic && u.profile_pic !== '' && u.profile_pic !== 'null') ? u.profile_pic : null,
                             status: a.status
                         });
                     }

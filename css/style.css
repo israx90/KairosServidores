@@ -1,29 +1,25 @@
 :root {
-    /* Premium Dark Theme Palette */
-    --primary-color: #2979ff;
-    /* Electric Blue */
-    --primary-hover: #5390ff;
+    /* Aurora Premium Palette */
+    --primary-color: #00E5FF; /* Cyan */
+    --primary-hover: #00B8D4;
+    --primary-gradient: linear-gradient(135deg, #00E5FF, #651FFF); /* Cyan to Indigo */
 
-    --background-dark: #09090b;
-    /* Almost black */
-    --background-card: #18181b;
-    /* Dark Zinc */
-    --background-input: #09090b;
-    /* Darker than card */
+    --background-dark: #050505; /* Obsidian */
+    --background-card: #121214;
+    --background-input: #0A0A0C;
 
     --text-main: #ffffff;
     --text-muted: #a1a1aa;
 
-    --success: #32d74b; /* Clean Green */
-    --warning: #ff9f0a; /* Clean Orange */
-    --danger: #ff453a;  /* Clean Red */
+    --success: #00E676; 
+    --warning: #FF9F0A; 
+    --danger:  #FF3B30;  
 
-    --border-radius: 20px;
-
-    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-    --shadow-soft: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
-    --shadow-glow: none;
-    /* Blue glow */
+    --border-radius: 24px; /* More rounded */
+    
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    --glass-border-top: 1px solid rgba(255, 255, 255, 0.15);
+    --shadow-soft: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 
     --font-family: 'Outfit', sans-serif;
 }
@@ -37,9 +33,11 @@
 body {
     font-family: var(--font-family);
     background-color: var(--background-dark);
+    /* Aurora Background */
     background-image: 
-        radial-gradient(ellipse at 10% 0%, rgba(41, 121, 255, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 90% 90%, rgba(156, 39, 176, 0.05) 0%, transparent 60%);
+        radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(101, 31, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.03) 0%, transparent 60%);
     background-attachment: fixed;
     color: var(--text-main);
     line-height: 1.6;
@@ -66,15 +64,23 @@ body {
     background: rgba(255, 255, 255, 0.4);
 }
 
-/* Premium Card Style (Matte Frosted Glass) */
+/* Premium Card Style (Neumorphic Glass) */
 .glass {
-    background: rgba(28, 28, 30, 0.6);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
+    background: rgba(18, 18, 20, 0.5);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: var(--glass-border);
+    border-top: var(--glass-border-top);
     box-shadow: var(--shadow-soft);
     border-radius: var(--border-radius);
-    min-width: 0; /* Prevents overflow in flex/grid */
+    min-width: 0; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .glass:hover {
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+    }
 }
 
 .main-content {
@@ -125,9 +131,8 @@ h6 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: 99px;
-    /* Pill shape */
     border: none;
     cursor: pointer;
     font-weight: 600;
@@ -140,25 +145,26 @@ h6 {
 }
 
 .btn:active {
-    transform: scale(0.96);
+    transform: scale(0.94);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    background: var(--primary-gradient);
     color: #fff;
-    box-shadow: 0 4px 15px rgba(41, 121, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(41, 121, 255, 0.6);
-    box-shadow: 0 8px 25px rgba(123, 97, 255, 0.6);
+    box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5), 0 8px 25px rgba(101, 31, 255, 0.4);
 }
 
 .btn-secondary {
-    background: #27272a;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-main);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -221,20 +227,21 @@ h6 {
 .form-control {
     width: 100%;
     padding: 14px 16px;
-    background: var(--background-input);
-    border: 1px solid #27272a;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     color: var(--text-main);
     font-family: inherit;
     font-size: 1rem;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     min-height: 48px; /* Mobile touch target */
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2);
 }
 
 /* Make native date/time picker icons visible on dark theme */

@@ -1166,20 +1166,59 @@ async function handleMockApi(urlStr, options) {
                 return jsonResponse(null, "No se recibió ninguna imagen.", false);
             }
 
-            const imageFile = body.get('image');
+            let imageFile = body.get('image');
             if (!imageFile) {
                 return jsonResponse(null, "No se recibió ninguna imagen.", false);
             }
 
-            // Generate unique filename
-            const ext = imageFile.name.split('.').pop() || 'png';
-            const fileName = `user_${currentUser.id}_${Date.now()}.${ext}`;
+            // --- COMPRESS TO WEBP ---
+            const compressedBlob = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(imageFile);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_SIZE = 500;
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Maintain aspect ratio while resizing
+                        if (width > height && width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        } else if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Compress to WebP with 80% quality
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/webp', 0.8);
+                    };
+                    img.onerror = (e) => reject(e);
+                };
+                reader.onerror = (e) => reject(e);
+            });
+            
+            imageFile = compressedBlob;
+
+            // Generate unique filename always as webp
+            const fileName = `user_${currentUser.id}_${Date.now()}.webp`;
 
             // Upload directly to Supabase Storage
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('avatars')
                 .upload(fileName, imageFile, {
                     cacheControl: '3600',
+                    contentType: 'image/webp',
                     upsert: true
                 });
 

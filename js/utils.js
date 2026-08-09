@@ -37,13 +37,15 @@ export function getAvatarHTML(user, size = '40px') {
  * @returns {string} HTML string
  */
 export function getInitialsAvatar(nameOrAlias, size = '40px') {
-    const initials = (nameOrAlias || '?')
-        .trim()
-        .split(' ')
-        .map(w => w[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
+    const words = (nameOrAlias || '?').trim().split(' ').filter(w => w.length > 0);
+    let initials = '';
+    if (words.length === 1) {
+        initials = words[0].substring(0, 2).toUpperCase();
+    } else if (words.length > 1) {
+        initials = words.map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    } else {
+        initials = '?';
+    }
 
     const colors = ['#2979ff', '#e91e63', '#9c27b0', '#00bcd4', '#4caf50', '#ff5722', '#ffc107'];
     let hash = 0;

@@ -278,10 +278,66 @@ export const Teams = {
     },
 
     editTeam(teamId) {
-        // Simple prompt for now, could be a modal
-        const newName = prompt('Nuevo nombre del equipo:');
-        if (newName) {
-            // Update logic...
+        const team = this.state.teams.find(t => t.id === teamId);
+        if (!team) return;
+
+        const content = `
+            <form id="edit-team-form">
+                <div class="input-group">
+                    <label>Nombre del Equipo</label>
+                    <input type="text" name="name" class="form-control" value="${team.name}" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%">Guardar Cambios</button>
+                <button type="button" class="btn btn-danger" style="width: 100%; margin-top: 8px;" onclick="Teams.deleteTeam(${team.id})">Eliminar Equipo</button>
+            </form>
+        `;
+
+        Modal.open(`Editar: ${team.name}`, content);
+
+        document.getElementById('edit-team-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = e.target.name.value.trim();
+            if (!name) return;
+
+            try {
+                const response = await fetch('api/teams.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: teamId, name })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Equipo actualizado', 'success');
+                    Modal.close();
+                    this.init(this.container.id);
+                } else {
+                    showToast(result.message || 'Error', 'error');
+                }
+            } catch (err) {
+                showToast('Error de conexión', 'error');
+            }
+        });
+    },
+
+    async deleteTeam(teamId) {
+        if (!confirm('¿Eliminar este equipo? Esta acción no se puede deshacer.')) return;
+
+        try {
+            const response = await fetch('api/teams.php', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: teamId })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Equipo eliminado', 'success');
+                Modal.close();
+                this.init(this.container.id);
+            } else {
+                showToast(result.message || 'Error', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión', 'error');
         }
     }
 };
